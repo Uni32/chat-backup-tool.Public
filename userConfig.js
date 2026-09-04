@@ -9,7 +9,7 @@ const userConfig = {
     "Kong": {
         avatar: "K",
         color: "#a8323a",
-        image: ""
+        image: "https://i.imgur.com/JtUMDrp.jpeg"
     },
 
 };

@@ -41,10 +41,12 @@
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
+            align-items: center;
         }
 
         button,
-        input[type="file"] {
+        input[type="file"],
+        input[type="text"] {
             font: inherit;
         }
 
@@ -60,6 +62,93 @@
 
         button:hover {
             opacity: 0.85;
+        }
+
+        .toolbar-hint {
+            font-size: 12px;
+            color: #8e8e93;
+            margin-left: 4px;
+        }
+
+        /* 닉네임 설정 패널 */
+        .nickname-panel {
+            display: none;
+            max-width: 900px;
+            margin: 16px auto 0;
+            padding: 0 16px;
+        }
+
+        .nickname-panel-inner {
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+
+        .nickname-panel-title {
+            margin: 0 0 12px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1c1c1e;
+        }
+
+        .nickname-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .nickname-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .nickname-swatch {
+            flex: 0 0 auto;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 1px solid rgba(0,0,0,0.08);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nickname-swatch img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .nickname-label {
+            flex: 0 0 90px;
+            font-size: 13px;
+            font-weight: 600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .nickname-row input[type="color"] {
+            flex: 0 0 auto;
+            width: 34px;
+            height: 30px;
+            padding: 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            background: none;
+        }
+
+        .nickname-row input[type="text"] {
+            flex: 1;
+            min-width: 0;
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 12px;
         }
 
         /* 채팅 영역 */
@@ -150,6 +239,22 @@
             font-size: 15px;
 
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+
+            cursor: text;
+        }
+
+        /* 직접 수정 가능한 말풍선 표시 */
+        .chat-msg[contenteditable] {
+            outline: none;
+        }
+
+        .chat-msg[contenteditable]:hover {
+            box-shadow: 0 0 0 1px #9db4ff inset;
+        }
+
+        .chat-msg[contenteditable]:focus {
+            box-shadow: 0 0 0 2px #2563eb inset;
+            background: #eef4ff;
         }
 
         /* 구분선 */
@@ -202,6 +307,10 @@
             .chat-body {
                 max-width: calc(100% - 50px);
             }
+
+            .nickname-label {
+                flex-basis: 64px;
+            }
         }
     </style>
 </head>
@@ -219,13 +328,22 @@
                 accept=".txt,text/plain"
             >
 
-            <button id="downloadButton">
-                JSON 다운로드
+            <button id="copyButton">
+                HTML 복사
             </button>
 
-            <button id="saveHtmlButton">
-                HTML 다운로드
-            </button>
+            <span class="toolbar-hint">
+                말풍선을 클릭하면 내용을 바로 수정할 수 있어요.
+            </span>
+        </div>
+    </div>
+
+
+    <!-- 닉네임별 인장 설정 -->
+    <div id="nicknamePanel" class="nickname-panel">
+        <div class="nickname-panel-inner">
+            <p class="nickname-panel-title">닉네임별 인장 설정 (색상 / 이미지)</p>
+            <div id="nicknameRows"></div>
         </div>
     </div>
 
@@ -238,7 +356,7 @@
     </div>
 
 
-    <!-- 사용자 설정 -->
+    <!-- 사용자 설정 (기본값) -->
     <script src="./userConfig.js"></script>
 
 
@@ -246,53 +364,51 @@
 
         const fileInput = document.getElementById("fileInput");
         const chat = document.getElementById("chat");
+        const copyButton = document.getElementById("copyButton");
 
-        const downloadButton =
-            document.getElementById("downloadButton");
-
-        const saveHtmlButton =
-            document.getElementById("saveHtmlButton");
+        const nicknamePanel = document.getElementById("nicknamePanel");
+        const nicknameRows = document.getElementById("nicknameRows");
 
 
         let parsedMessages = [];
 
+        /*
+         * 닉네임별 색상/이미지 "실시간 수정값"
+         * userConfig.js 값을 기본값으로 시작하고,
+         * 패널에서 바꾸면 이 객체가 갱신된다.
+         */
+        const userOverrides = {};
+
 
         /*
          * 사용자 설정 가져오기
+         * 우선순위: 페이지에서 수정한 값(userOverrides) > userConfig.js > 기본값
          */
         function getUserConfig(nickname) {
 
-            if (
-                typeof userConfig !== "undefined" &&
-                userConfig &&
-                userConfig[nickname]
-            ) {
+            const base =
+                (typeof userConfig !== "undefined" &&
+                 userConfig &&
+                 userConfig[nickname]) || null;
 
-                return {
-                    avatar:
-                        userConfig[nickname].avatar ||
-                        nickname.charAt(0) ||
-                        "?",
+            const override =
+                userOverrides[nickname] || null;
 
-                    color:
-                        userConfig[nickname].color ||
-                        "#1c1c1e",
-
-                    image:
-                        userConfig[nickname].image ||
-                        ""
-                };
-            }
-
-
-            /*
-             * 설정되지 않은 닉네임은
-             * 자동으로 첫 글자를 아바타로 사용
-             */
             return {
-                avatar: nickname.charAt(0) || "?",
-                color: "#1c1c1e",
-                image: ""
+                avatar:
+                    (base && base.avatar) ||
+                    nickname.charAt(0) ||
+                    "?",
+
+                color:
+                    (override && override.color) ||
+                    (base && base.color) ||
+                    "#1c1c1e",
+
+                image:
+                    override
+                        ? override.image
+                        : ((base && base.image) || "")
             };
         }
 
@@ -420,7 +536,6 @@
                 }
 
 
-
                 /*
                  * 메시지의 추가 줄
                  */
@@ -452,6 +567,140 @@
 
 
         /*
+         * 파싱 결과에서 등장하는 닉네임을
+         * 처음 나온 순서대로 모아 패널을 구성한다.
+         */
+        function buildNicknamePanel(messages) {
+
+            const seen = new Set();
+            const order = [];
+
+            messages.forEach(function (item) {
+
+                if (item.type === "message" && !seen.has(item.nickname)) {
+                    seen.add(item.nickname);
+                    order.push(item.nickname);
+                }
+            });
+
+
+            /*
+             * 처음 보는 닉네임이면
+             * userConfig.js 값을 기본값으로 override 초기화
+             */
+            order.forEach(function (nickname) {
+
+                if (userOverrides[nickname]) {
+                    return;
+                }
+
+                const base =
+                    (typeof userConfig !== "undefined" &&
+                     userConfig &&
+                     userConfig[nickname]) || null;
+
+                userOverrides[nickname] = {
+                    color: (base && base.color) || "#1c1c1e",
+                    image: (base && base.image) || ""
+                };
+            });
+
+
+            nicknameRows.innerHTML = "";
+
+            if (!order.length) {
+                nicknamePanel.style.display = "none";
+                return;
+            }
+
+            order.forEach(function (nickname) {
+
+                const config = userOverrides[nickname];
+
+                const row =
+                    document.createElement("div");
+                row.className = "nickname-row";
+
+
+                /*
+                 * 미리보기 스와치
+                 */
+                const swatch =
+                    document.createElement("div");
+                swatch.className = "nickname-swatch";
+                swatch.style.background = config.color;
+
+                function refreshSwatch() {
+                    swatch.innerHTML = "";
+                    if (config.image) {
+                        const img = document.createElement("img");
+                        img.src = config.image;
+                        img.alt = "";
+                        img.onerror = function () {
+                            this.remove();
+                        };
+                        swatch.appendChild(img);
+                    }
+                    swatch.style.background = config.color;
+                }
+                refreshSwatch();
+
+
+                /*
+                 * 닉네임 라벨
+                 */
+                const label =
+                    document.createElement("span");
+                label.className = "nickname-label";
+                label.textContent = nickname;
+                label.title = nickname;
+
+
+                /*
+                 * 색상 선택
+                 */
+                const colorInput =
+                    document.createElement("input");
+                colorInput.type = "color";
+                colorInput.value = config.color;
+
+                colorInput.addEventListener("input", function () {
+                    config.color = this.value;
+                    refreshSwatch();
+                    renderChat(parsedMessages);
+                });
+
+
+                /*
+                 * 이미지 URL 입력
+                 */
+                const imageInput =
+                    document.createElement("input");
+                imageInput.type = "text";
+                imageInput.placeholder = "이미지 URL (선택)";
+                imageInput.value = config.image;
+
+                imageInput.addEventListener("change", function () {
+                    config.image = this.value.trim();
+                    refreshSwatch();
+                    renderChat(parsedMessages);
+                });
+
+
+                row.appendChild(swatch);
+                row.appendChild(label);
+                row.appendChild(colorInput);
+                row.appendChild(imageInput);
+
+                nicknameRows.appendChild(row);
+            });
+
+            nicknamePanel.style.display = "block";
+        }
+
+
+
+        /*
          * 채팅 렌더링
          */
         function renderChat(messages) {
@@ -475,7 +724,6 @@
             }
 
 
-
             /*
              * 직전에 렌더링된 "사람 블록" 정보를 기억해두었다가
              * 같은 닉네임이 연속되면 인장(아바타)/이름/시간을
@@ -483,7 +731,9 @@
              */
             let currentBlock = null;
 
-            for (const item of messages) {
+            for (let i = 0; i < messages.length; i++) {
+
+                const item = messages[i];
 
 
                 /*
@@ -549,6 +799,10 @@
 
                     msg.textContent =
                         item.content;
+
+                    msg.setAttribute("contenteditable", "plaintext-only");
+                    msg.setAttribute("spellcheck", "false");
+                    msg.dataset.idx = String(i);
 
 
                     row.appendChild(msg);
@@ -702,7 +956,7 @@
 
 
                 /*
-                 * 메시지
+                 * 메시지 (클릭해서 바로 수정 가능)
                  */
                 const msg =
                     document.createElement("div");
@@ -712,6 +966,10 @@
 
                 msg.textContent =
                     item.content;
+
+                msg.setAttribute("contenteditable", "plaintext-only");
+                msg.setAttribute("spellcheck", "false");
+                msg.dataset.idx = String(i);
 
 
 
@@ -741,6 +999,30 @@
 
 
         /*
+         * 말풍선 직접 수정 → parsedMessages에 반영
+         * (닉네임 설정을 바꿔 다시 렌더링해도
+         *  수정한 내용이 사라지지 않도록 하기 위함)
+         */
+        chat.addEventListener("input", function (e) {
+
+            const target = e.target;
+
+            if (!target.classList || !target.classList.contains("chat-msg")) {
+                return;
+            }
+
+            const idx = Number(target.dataset.idx);
+
+            if (Number.isNaN(idx) || !parsedMessages[idx]) {
+                return;
+            }
+
+            parsedMessages[idx].content = target.textContent;
+        });
+
+
+
+        /*
          * TXT 파일 선택
          */
         fileInput.addEventListener(
@@ -763,6 +1045,7 @@
                     parseChat(text);
 
 
+                buildNicknamePanel(parsedMessages);
                 renderChat(parsedMessages);
             }
         );
@@ -770,304 +1053,87 @@
 
 
         /*
-         * JSON 다운로드
+         * 현재 화면에 표시된 채팅 내용을
+         * (수정 중 표시 등은 제거하고) HTML 문자열로 정리
          */
-        downloadButton.addEventListener(
-            "click",
-            function () {
+        function buildCleanHtml() {
 
-                const json =
-                    JSON.stringify(
-                        parsedMessages,
-                        null,
-                        2
-                    );
+            const clone = chat.cloneNode(true);
 
+            clone.querySelectorAll("[contenteditable]").forEach(function (el) {
+                el.removeAttribute("contenteditable");
+                el.removeAttribute("spellcheck");
+                el.removeAttribute("data-idx");
+            });
 
-                const blob =
-                    new Blob(
-                        [json],
-                        {
-                            type:
-                                "application/json;charset=utf-8"
-                        }
-                    );
-
-
-                const url =
-                    URL.createObjectURL(blob);
-
-
-                const a =
-                    document.createElement("a");
-
-
-                a.href = url;
-
-                a.download =
-                    "chat_backup.json";
-
-
-                document.body.appendChild(a);
-
-                a.click();
-
-                document.body.removeChild(a);
-
-
-                URL.revokeObjectURL(url);
+            const emptyEl = clone.querySelector(".empty");
+            if (emptyEl) {
+                emptyEl.remove();
             }
-        );
+
+            return clone.innerHTML.trim();
+        }
 
 
 
         /*
-         * HTML 다운로드
-         *
-         * 현재 #chat 안에 있는 내용만 저장한다.
-         *
-         * 따라서
-         * - 채팅 백업 제목
-         * - 파일 선택
-         * - JSON 버튼
-         * - HTML 버튼
-         *
-         * 은 저장되지 않는다.
+         * 클립보드 복사 (구형 브라우저 대비 fallback 포함)
          */
-        saveHtmlButton.addEventListener(
-            "click",
-            function () {
+        function copyTextToClipboard(text) {
 
-                const chatHtml =
-                    chat.innerHTML;
-
-
-                const standaloneHtml = `<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>채팅 백업</title>
-
-<style>
-
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-
-    font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
-
-    background: #f5f5f7;
-    color: #1c1c1e;
-}
-
-#chat {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 24px 16px 60px;
-}
-
-.chat-block {
-    display: flex;
-    align-items: flex-start;
-
-    gap: 10px;
-
-    margin: 14px 0;
-}
-
-.chat-avatar {
-    flex: 0 0 40px;
-
-    width: 40px;
-    height: 40px;
-
-    border-radius: 50%;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    overflow: hidden;
-
-    color: #ffffff;
-
-    font-weight: 700;
-    font-size: 17px;
-}
-
-.chat-avatar img {
-    width: 100%;
-    height: 100%;
-
-    object-fit: cover;
-
-    display: block;
-}
-
-.chat-body {
-    min-width: 0;
-
-    max-width:
-        calc(100% - 50px);
-}
-
-.chat-meta {
-    display: flex;
-    align-items: baseline;
-
-    gap: 8px;
-
-    margin:
-        0 0 4px 2px;
-}
-
-.chat-name {
-    font-weight: 700;
-    font-size: 14px;
-}
-
-.chat-time {
-    color: #8e8e93;
-    font-size: 12px;
-}
-
-.chat-msg-row {
-    display: flex;
-}
-
-.chat-msg-row + .chat-msg-row {
-    margin-top: 4px;
-}
-
-.chat-msg {
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-
-    background: #ffffff;
-
-    border:
-        1px solid #e5e5e7;
-
-    border-radius:
-        4px 16px 16px 16px;
-
-    padding:
-        10px 13px;
-
-    line-height: 1.5;
-
-    font-size: 15px;
-
-    box-shadow:
-        0 1px 2px
-        rgba(0,0,0,.04);
-}
-
-.chat-divider {
-    display: flex;
-    align-items: center;
-
-    gap: 12px;
-
-    margin: 28px 0;
-}
-
-.chat-divider::before,
-.chat-divider::after {
-    content: "";
-
-    height: 1px;
-
-    background: #d1d1d6;
-
-    flex: 1;
-}
-
-.chat-divider-badge {
-    flex: 0 0 auto;
-
-    padding:
-        5px 12px;
-
-    border-radius: 999px;
-
-    background: #e5e5ea;
-
-    color: #636366;
-
-    font-size: 12px;
-
-    font-weight: 600;
-}
-
-@media (max-width: 600px) {
-
-    #chat {
-        padding:
-            18px 10px 40px;
-    }
-
-    .chat-body {
-        max-width:
-            calc(100% - 50px);
-    }
-}
-
-</style>
-</head>
-
-<body>
-
-<div id="chat">
-${chatHtml}
-</div>
-
-</body>
-</html>`;
-
-
-                const blob =
-                    new Blob(
-                        [standaloneHtml],
-                        {
-                            type:
-                                "text/html;charset=utf-8"
-                        }
-                    );
-
-
-                const url =
-                    URL.createObjectURL(blob);
-
-
-                const a =
-                    document.createElement("a");
-
-
-                a.href = url;
-
-                a.download =
-                    "chat_backup.html";
-
-
-                document.body.appendChild(a);
-
-                a.click();
-
-                document.body.removeChild(a);
-
-
-                URL.revokeObjectURL(url);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                return navigator.clipboard.writeText(text);
             }
-        );
+
+            return new Promise(function (resolve, reject) {
+
+                const ta = document.createElement("textarea");
+                ta.value = text;
+                ta.style.position = "fixed";
+                ta.style.left = "-9999px";
+
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+
+                try {
+                    document.execCommand("copy");
+                    resolve();
+                } catch (err) {
+                    reject(err);
+                } finally {
+                    document.body.removeChild(ta);
+                }
+            });
+        }
+
+
+
+        /*
+         * HTML 복사 버튼
+         */
+        copyButton.addEventListener("click", function () {
+
+            const html = buildCleanHtml();
+
+            if (!html) {
+                return;
+            }
+
+            copyTextToClipboard(html)
+                .then(function () {
+
+                    const original = copyButton.textContent;
+                    copyButton.textContent = "복사됨!";
+
+                    setTimeout(function () {
+                        copyButton.textContent = original;
+                    }, 1500);
+                })
+                .catch(function () {
+                    alert("복사에 실패했습니다. 브라우저 권한을 확인해주세요.");
+                });
+        });
 
     </script>
 
