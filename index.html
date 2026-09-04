@@ -50,6 +50,25 @@
             font: inherit;
         }
 
+        .file-input-label {
+            display: inline-flex;
+            align-items: center;
+            padding: 9px 14px;
+            border-radius: 8px;
+            background: #f0f0f2;
+            color: #1c1c1e;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .file-input-label:hover {
+            background: #e5e5ea;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
         button {
             border: 0;
             border-radius: 8px;
@@ -123,12 +142,19 @@
         }
 
         .nickname-label {
-            flex: 0 0 90px;
+            flex: 0 1 150px;
+            min-width: 90px;
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
             font-size: 13px;
             font-weight: 600;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            outline: none;
+        }
+
+        .nickname-label:focus {
+            border-color: #8aa8ff;
+            box-shadow: 0 0 0 2px #eef4ff;
         }
 
         .nickname-row input[type="color"] {
@@ -299,7 +325,54 @@
             padding: 60px 20px;
         }
 
-        /* 텍스트 / 아이콘 편집 패널 */
+        /* 전체 TXT 텍스트 편집 */
+        .raw-text-panel {
+            display: block;
+            max-width: 900px;
+            margin: 16px auto 0;
+            padding: 0 16px;
+        }
+
+        .raw-text-panel-inner {
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+
+        .raw-text-panel-title {
+            margin: 0 0 6px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1c1c1e;
+        }
+
+        .raw-text-panel-help {
+            margin: 0 0 10px;
+            font-size: 12px;
+            color: #8e8e93;
+        }
+
+        #rawTextInput {
+            width: 100%;
+            min-height: 280px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            resize: vertical;
+            outline: none;
+            background: #fafafa;
+            color: #1c1c1e;
+            font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        }
+
+        #rawTextInput:focus {
+            border-color: #8aa8ff;
+            box-shadow: 0 0 0 2px #eef4ff;
+            background: #fff;
+        }
+
+        /* 편집 패널 공통 */
         .editor-panel {
             display: none;
             max-width: 900px;
@@ -319,45 +392,6 @@
             font-size: 14px;
             font-weight: 700;
             color: #1c1c1e;
-        }
-
-        .editor-panel-help {
-            margin: -5px 0 12px;
-            font-size: 12px;
-            color: #8e8e93;
-        }
-
-        .separator-edit-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
-        }
-
-        .separator-edit-row:last-child {
-            margin-bottom: 0;
-        }
-
-        .separator-edit-number {
-            flex: 0 0 28px;
-            color: #8e8e93;
-            font-size: 12px;
-            text-align: center;
-        }
-
-        .separator-edit-row input[type="text"] {
-            flex: 1;
-            min-width: 0;
-            padding: 8px 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 13px;
-            outline: none;
-        }
-
-        .separator-edit-row input[type="text"]:focus {
-            border-color: #8aa8ff;
-            box-shadow: 0 0 0 2px #eef4ff;
         }
 
         .icon-library-tools {
@@ -486,7 +520,8 @@
             }
 
             .nickname-label {
-                flex-basis: 64px;
+                flex: 1 1 100px;
+                min-width: 80px;
             }
         }
     </style>
@@ -499,6 +534,7 @@
         <h1>채팅 백업</h1>
 
         <div class="toolbar-actions">
+            <label class="file-input-label" for="fileInput">TXT 파일 불러오기 (선택)</label>
             <input
                 id="fileInput"
                 type="file"
@@ -520,21 +556,28 @@
     </div>
 
 
+    <!-- 전체 TXT 텍스트 편집 -->
+    <div id="rawTextPanel" class="raw-text-panel">
+        <div class="raw-text-panel-inner">
+            <p class="raw-text-panel-title">전체 TXT 텍스트 입력 / 편집</p>
+            <p class="raw-text-panel-help">TXT 파일을 첨부하지 않아도 됩니다. 아래 칸에 채팅 원문을 그대로 붙여넣으면 입력 즉시 아래 채팅 화면에 반영됩니다. 말풍선을 직접 수정한 내용도 이곳에 반영됩니다.</p>
+            <textarea id="rawTextInput" spellcheck="false" wrap="off" placeholder="예:
+[Popo] [오후 10:33] ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ
+[Popo] [오후 10:33] 그간 수상하게 붙어다녔는데
+[Popo] [오후 10:33] 납득하지 않을까
+
+/~ 천진원, 설민석 인생에 개입 (정설) ~/
+
+[Kong] [오후 10:33] 지년이 개인적으로 본인 삶의 권태를 표현할 일이 있을까..."></textarea>
+        </div>
+    </div>
+
+
     <!-- 닉네임별 인장 설정 -->
     <div id="nicknamePanel" class="nickname-panel">
         <div class="nickname-panel-inner">
             <p class="nickname-panel-title">닉네임별 인장 설정 (색상 / 이미지)</p>
             <div id="nicknameRows"></div>
-        </div>
-    </div>
-
-
-    <!-- 중앙 캡슐(구분선) 텍스트 편집 -->
-    <div id="separatorPanel" class="editor-panel">
-        <div class="editor-panel-inner">
-            <p class="editor-panel-title">중앙 캡슐 텍스트 편집</p>
-            <p class="editor-panel-help">각 칸의 문구를 입력하면 화면의 중앙 캡슐에 바로 반영됩니다.</p>
-            <div id="separatorRows"></div>
         </div>
     </div>
 
@@ -609,10 +652,11 @@
         const copyButton = document.getElementById("copyButton");
         const toggleIconPanelButton = document.getElementById("toggleIconPanelButton");
 
+        const rawTextPanel = document.getElementById("rawTextPanel");
+        const rawTextInput = document.getElementById("rawTextInput");
+
         const nicknamePanel = document.getElementById("nicknamePanel");
         const nicknameRows = document.getElementById("nicknameRows");
-        const separatorPanel = document.getElementById("separatorPanel");
-        const separatorRows = document.getElementById("separatorRows");
 
         const iconLibraryPanel = document.getElementById("iconLibraryPanel");
         const iconFileInput = document.getElementById("iconFileInput");
@@ -846,6 +890,69 @@
 
 
         /*
+         * 현재 parsedMessages를 TXT 원문 형태로 다시 만들어
+         * 전체 텍스트 편집창에 반영한다.
+         */
+        function serializeChat(messages) {
+            return messages.map(function (item) {
+                if (item.type === "separator") {
+                    return "/~" + item.content + "~/";
+                }
+
+                const content = String(item.content || "");
+                const lines = content.split("\n");
+                const firstLine = "[" + item.nickname + "] [" + item.time + "] " + (lines.shift() || "");
+                return [firstLine].concat(lines).join("\n");
+            }).join("\n");
+        }
+
+        function syncRawTextFromMessages() {
+            if (rawTextInput) {
+                rawTextInput.value = serializeChat(parsedMessages);
+            }
+        }
+
+        /*
+         * 닉네임 변경: 같은 닉네임을 가진 모든 메시지에 즉시 반영하고
+         * 기존 색상/이미지 설정도 새 닉네임으로 이동한다.
+         */
+        function renameNickname(oldNickname, requestedName) {
+            const newNickname = String(requestedName || "").trim();
+
+            if (!newNickname || newNickname === oldNickname) {
+                return false;
+            }
+
+            if (userOverrides[newNickname] && newNickname !== oldNickname) {
+                alert("이미 사용 중인 닉네임입니다. 다른 이름을 입력해주세요.");
+                buildNicknamePanel(parsedMessages);
+                return false;
+            }
+
+            const config = userOverrides[oldNickname] || {
+                color: "#1c1c1e",
+                image: ""
+            };
+
+            delete userOverrides[oldNickname];
+            userOverrides[newNickname] = config;
+
+            parsedMessages.forEach(function (item) {
+                if (item.type === "message" && item.nickname === oldNickname) {
+                    item.nickname = newNickname;
+                }
+            });
+
+            syncRawTextFromMessages();
+            renderChat(parsedMessages);
+            buildNicknamePanel(parsedMessages);
+            updateIconTargetSelect();
+            iconTargetSelect.value = newNickname;
+            return true;
+        }
+
+
+        /*
          * 파싱 결과에서 등장하는 닉네임을
          * 처음 나온 순서대로 모아 패널을 구성한다.
          */
@@ -862,6 +969,16 @@
                 }
             });
 
+
+            /*
+             * 현재 TXT에 존재하지 않는 닉네임의 임시 설정은 정리한다.
+             * (전체 텍스트를 수정해 닉네임/메시지를 삭제했을 때 반영)
+             */
+            Object.keys(userOverrides).forEach(function (nickname) {
+                if (!order.includes(nickname)) {
+                    delete userOverrides[nickname];
+                }
+            });
 
             /*
              * 처음 보는 닉네임이면
@@ -929,10 +1046,23 @@
                  * 닉네임 라벨
                  */
                 const label =
-                    document.createElement("span");
+                    document.createElement("input");
                 label.className = "nickname-label";
-                label.textContent = nickname;
+                label.type = "text";
+                label.value = nickname;
                 label.title = nickname;
+                label.spellcheck = false;
+
+                label.addEventListener("change", function () {
+                    renameNickname(nickname, this.value);
+                });
+
+                label.addEventListener("keydown", function (e) {
+                    if (e.key === "Enter") {
+                        e.preventDefault();
+                        this.blur();
+                    }
+                });
 
 
                 /*
@@ -978,59 +1108,6 @@
             updateIconTargetSelect();
         }
 
-
-
-        /*
-         * 중앙 캡슐 텍스트 편집 패널
-         */
-        function buildSeparatorPanel(messages) {
-
-            separatorRows.innerHTML = "";
-
-            const separators = messages
-                .map(function (item, index) {
-                    return item.type === "separator"
-                        ? { item: item, index: index }
-                        : null;
-                })
-                .filter(Boolean);
-
-            if (!separators.length) {
-                separatorPanel.style.display = "none";
-                return;
-            }
-
-            separators.forEach(function (entry, number) {
-                const row = document.createElement("div");
-                row.className = "separator-edit-row";
-
-                const numberLabel = document.createElement("span");
-                numberLabel.className = "separator-edit-number";
-                numberLabel.textContent = String(number + 1);
-
-                const input = document.createElement("input");
-                input.type = "text";
-                input.value = entry.item.content;
-                input.placeholder = "캡슐 텍스트";
-
-                input.addEventListener("input", function () {
-                    entry.item.content = this.value;
-
-                    const badge = chat.querySelector(
-                        '.chat-divider-badge[data-separator-idx="' + entry.index + '"]'
-                    );
-                    if (badge) {
-                        badge.textContent = this.value;
-                    }
-                });
-
-                row.appendChild(numberLabel);
-                row.appendChild(input);
-                separatorRows.appendChild(row);
-            });
-
-            separatorPanel.style.display = "block";
-        }
 
 
         /*
@@ -1537,6 +1614,23 @@
             }
 
             parsedMessages[idx].content = target.textContent;
+            syncRawTextFromMessages();
+        });
+
+
+        /*
+         * 전체 TXT 텍스트 편집창 → 파싱 → 화면에 즉시 반영
+         */
+        rawTextInput.addEventListener("input", function () {
+            try {
+                parsedMessages = parseChat(this.value);
+                buildNicknamePanel(parsedMessages);
+                renderChat(parsedMessages);
+                updateIconTargetSelect();
+                errorBanner.style.display = "none";
+            } catch (err) {
+                showError("텍스트 처리 중 오류", err);
+            }
         });
 
 
@@ -1566,9 +1660,9 @@
                     parsedMessages =
                         parseChat(text);
 
-
+                    rawTextInput.value = text;
+                    rawTextPanel.style.display = "block";
                     buildNicknamePanel(parsedMessages);
-                    buildSeparatorPanel(parsedMessages);
                     updateIconTargetSelect();
                     renderChat(parsedMessages);
 
@@ -1600,7 +1694,9 @@
                 emptyEl.remove();
             }
 
-            return clone.innerHTML.trim();
+            return '<div class="chat-backup">\n' +
+                   clone.innerHTML.trim() +
+                   '\n</div>';
         }
 
 
