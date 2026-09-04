@@ -172,7 +172,8 @@
             width: 40px;
             height: 40px;
 
-            border-radius: 50%;
+            /* 카카오톡식 인장: 정사각형 + 둥근 모서리 */
+            border-radius: 9px;
 
             display: flex;
             align-items: center;
@@ -298,6 +299,182 @@
             padding: 60px 20px;
         }
 
+        /* 텍스트 / 아이콘 편집 패널 */
+        .editor-panel {
+            display: none;
+            max-width: 900px;
+            margin: 16px auto 0;
+            padding: 0 16px;
+        }
+
+        .editor-panel-inner {
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+
+        .editor-panel-title {
+            margin: 0 0 12px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1c1c1e;
+        }
+
+        .editor-panel-help {
+            margin: -5px 0 12px;
+            font-size: 12px;
+            color: #8e8e93;
+        }
+
+        .separator-edit-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .separator-edit-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .separator-edit-number {
+            flex: 0 0 28px;
+            color: #8e8e93;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .separator-edit-row input[type="text"] {
+            flex: 1;
+            min-width: 0;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .separator-edit-row input[type="text"]:focus {
+            border-color: #8aa8ff;
+            box-shadow: 0 0 0 2px #eef4ff;
+        }
+
+        .icon-library-tools {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .icon-library-tools input[type="text"] {
+            flex: 1 1 260px;
+            min-width: 180px;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .icon-target-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            color: #636366;
+        }
+
+        .icon-target-row select {
+            min-width: 140px;
+            padding: 7px 9px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+            font: inherit;
+            font-size: 12px;
+        }
+
+        .icon-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .icon-empty {
+            grid-column: 1 / -1;
+            padding: 20px;
+            text-align: center;
+            color: #8e8e93;
+            font-size: 12px;
+            border: 1px dashed #d1d1d6;
+            border-radius: 8px;
+        }
+
+        .icon-card {
+            position: relative;
+            min-width: 0;
+            padding: 10px 8px 8px;
+            border: 1px solid #e5e5e7;
+            border-radius: 10px;
+            background: #fafafa;
+            text-align: center;
+        }
+
+        .icon-card img {
+            width: 52px;
+            height: 52px;
+            display: block;
+            margin: 0 auto 7px;
+            object-fit: cover;
+            border-radius: 9px;
+        }
+
+        .icon-card-name {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-bottom: 7px;
+            font-size: 11px;
+            color: #636366;
+        }
+
+        .icon-card-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .icon-card-actions button {
+            flex: 1;
+            min-width: 0;
+            padding: 6px 5px;
+            border-radius: 6px;
+            font-size: 11px;
+        }
+
+        .icon-card-actions .delete-icon {
+            background: #e5e5ea;
+            color: #636366;
+        }
+
+        /* 오류 배너 */
+        .error-banner {
+            max-width: 900px;
+            margin: 16px auto 0;
+            padding: 12px 16px;
+
+            background: #fdecea;
+            border: 1px solid #f5c2bd;
+            border-radius: 8px;
+
+            color: #b3261e;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
         /* 모바일 */
         @media (max-width: 600px) {
             #chat {
@@ -332,6 +509,10 @@
                 HTML 복사
             </button>
 
+            <button id="toggleIconPanelButton" type="button">
+                인장 아이콘 보관함
+            </button>
+
             <span class="toolbar-hint">
                 말풍선을 클릭하면 내용을 바로 수정할 수 있어요.
             </span>
@@ -348,6 +529,44 @@
     </div>
 
 
+    <!-- 중앙 캡슐(구분선) 텍스트 편집 -->
+    <div id="separatorPanel" class="editor-panel">
+        <div class="editor-panel-inner">
+            <p class="editor-panel-title">중앙 캡슐 텍스트 편집</p>
+            <p class="editor-panel-help">각 칸의 문구를 입력하면 화면의 중앙 캡슐에 바로 반영됩니다.</p>
+            <div id="separatorRows"></div>
+        </div>
+    </div>
+
+
+    <!-- 자주 사용하는 인장 아이콘 보관함 -->
+    <div id="iconLibraryPanel" class="editor-panel">
+        <div class="editor-panel-inner">
+            <p class="editor-panel-title">인장 아이콘 보관함</p>
+            <p class="editor-panel-help">이미지 파일 또는 이미지 URL을 등록해두면 다음에도 계속 사용할 수 있습니다. (브라우저의 localStorage에 저장)</p>
+
+            <div class="icon-library-tools">
+                <input id="iconFileInput" type="file" accept="image/*">
+                <input id="iconUrlInput" type="text" placeholder="이미지 URL을 입력하세요">
+                <button id="addIconUrlButton" type="button">URL 등록</button>
+            </div>
+
+            <div class="icon-target-row">
+                <span>적용할 닉네임</span>
+                <select id="iconTargetSelect">
+                    <option value="">TXT를 먼저 불러오세요</option>
+                </select>
+            </div>
+
+            <div id="iconList" class="icon-list"></div>
+        </div>
+    </div>
+
+
+    <!-- 오류 발생 시 여기에 내용이 표시됩니다 -->
+    <div id="errorBanner" class="error-banner" style="display:none;"></div>
+
+
     <!-- 실제 채팅 영역 -->
     <div id="chat">
         <div class="empty">
@@ -356,8 +575,31 @@
     </div>
 
 
-    <!-- 사용자 설정 (기본값) -->
-    <script src="./userConfig.js"></script>
+    <!-- ============================================================
+         사용자 설정 (기본값)
+         이름 추가/수정은 아래 목록만 고치면 됩니다.
+         (예전엔 userConfig.js라는 별도 파일이었지만,
+          로컬 PC에서 index.html을 직접 열었을 때 브라우저가
+          다른 로컬 파일 불러오기를 보안상 막아버려서
+          이 파일 안으로 직접 옮겼습니다)
+         ============================================================ -->
+    <script>
+        const userConfig = {
+
+            "Popo": {
+                avatar: "P",
+                color: "#1c1c1e",
+                image: ""
+            },
+
+            "Kong": {
+                avatar: "K",
+                color: "#a8323a",
+                image: "https://i.imgur.com/JtUMDrp.jpeg"
+            },
+
+        };
+    </script>
 
 
     <script>
@@ -365,9 +607,46 @@
         const fileInput = document.getElementById("fileInput");
         const chat = document.getElementById("chat");
         const copyButton = document.getElementById("copyButton");
+        const toggleIconPanelButton = document.getElementById("toggleIconPanelButton");
 
         const nicknamePanel = document.getElementById("nicknamePanel");
         const nicknameRows = document.getElementById("nicknameRows");
+        const separatorPanel = document.getElementById("separatorPanel");
+        const separatorRows = document.getElementById("separatorRows");
+
+        const iconLibraryPanel = document.getElementById("iconLibraryPanel");
+        const iconFileInput = document.getElementById("iconFileInput");
+        const iconUrlInput = document.getElementById("iconUrlInput");
+        const addIconUrlButton = document.getElementById("addIconUrlButton");
+        const iconTargetSelect = document.getElementById("iconTargetSelect");
+        const iconList = document.getElementById("iconList");
+
+        const errorBanner = document.getElementById("errorBanner");
+
+
+        /*
+         * 오류가 나면 콘솔뿐 아니라 화면에도 바로 보이게 표시.
+         * (개발자도구를 열지 않아도 원인을 바로 알 수 있도록)
+         */
+        function showError(prefix, err) {
+            const message =
+                (err && err.message) ? err.message : String(err);
+
+            errorBanner.textContent =
+                "⚠ " + prefix + ": " + message;
+
+            errorBanner.style.display = "block";
+
+            console.error(prefix, err);
+        }
+
+        window.addEventListener("error", function (e) {
+            showError("스크립트 오류", e.error || e.message);
+        });
+
+        window.addEventListener("unhandledrejection", function (e) {
+            showError("처리되지 않은 오류", e.reason);
+        });
 
 
         let parsedMessages = [];
@@ -696,8 +975,247 @@
             });
 
             nicknamePanel.style.display = "block";
+            updateIconTargetSelect();
         }
 
+
+
+        /*
+         * 중앙 캡슐 텍스트 편집 패널
+         */
+        function buildSeparatorPanel(messages) {
+
+            separatorRows.innerHTML = "";
+
+            const separators = messages
+                .map(function (item, index) {
+                    return item.type === "separator"
+                        ? { item: item, index: index }
+                        : null;
+                })
+                .filter(Boolean);
+
+            if (!separators.length) {
+                separatorPanel.style.display = "none";
+                return;
+            }
+
+            separators.forEach(function (entry, number) {
+                const row = document.createElement("div");
+                row.className = "separator-edit-row";
+
+                const numberLabel = document.createElement("span");
+                numberLabel.className = "separator-edit-number";
+                numberLabel.textContent = String(number + 1);
+
+                const input = document.createElement("input");
+                input.type = "text";
+                input.value = entry.item.content;
+                input.placeholder = "캡슐 텍스트";
+
+                input.addEventListener("input", function () {
+                    entry.item.content = this.value;
+
+                    const badge = chat.querySelector(
+                        '.chat-divider-badge[data-separator-idx="' + entry.index + '"]'
+                    );
+                    if (badge) {
+                        badge.textContent = this.value;
+                    }
+                });
+
+                row.appendChild(numberLabel);
+                row.appendChild(input);
+                separatorRows.appendChild(row);
+            });
+
+            separatorPanel.style.display = "block";
+        }
+
+
+        /*
+         * 자주 사용하는 인장 아이콘 보관함
+         */
+        const ICON_STORAGE_KEY = "chatBackupStampIcons_v1";
+
+        function loadSavedIcons() {
+            try {
+                const raw = localStorage.getItem(ICON_STORAGE_KEY);
+                const data = raw ? JSON.parse(raw) : [];
+                return Array.isArray(data) ? data : [];
+            } catch (err) {
+                console.warn("아이콘 목록을 불러오지 못했습니다.", err);
+                return [];
+            }
+        }
+
+        let savedIcons = loadSavedIcons();
+
+        function saveIcons() {
+            try {
+                localStorage.setItem(ICON_STORAGE_KEY, JSON.stringify(savedIcons));
+            } catch (err) {
+                showError("아이콘 저장 중 오류", err);
+            }
+        }
+
+        function updateIconTargetSelect() {
+            const nicknames = Object.keys(userOverrides);
+            const current = iconTargetSelect.value;
+
+            iconTargetSelect.innerHTML = "";
+
+            if (!nicknames.length) {
+                const option = document.createElement("option");
+                option.value = "";
+                option.textContent = "TXT를 먼저 불러오세요";
+                iconTargetSelect.appendChild(option);
+                iconTargetSelect.disabled = true;
+                return;
+            }
+
+            iconTargetSelect.disabled = false;
+
+            nicknames.forEach(function (nickname) {
+                const option = document.createElement("option");
+                option.value = nickname;
+                option.textContent = nickname;
+                iconTargetSelect.appendChild(option);
+            });
+
+            if (nicknames.includes(current)) {
+                iconTargetSelect.value = current;
+            }
+        }
+
+        function applySavedIcon(src) {
+            const nickname = iconTargetSelect.value;
+
+            if (!nickname || !userOverrides[nickname]) {
+                alert("먼저 적용할 닉네임을 선택해주세요.");
+                return;
+            }
+
+            userOverrides[nickname].image = src;
+            buildNicknamePanel(parsedMessages);
+            renderChat(parsedMessages);
+            updateIconTargetSelect();
+            iconTargetSelect.value = nickname;
+        }
+
+        function renderIconLibrary() {
+            iconList.innerHTML = "";
+
+            if (!savedIcons.length) {
+                const empty = document.createElement("div");
+                empty.className = "icon-empty";
+                empty.textContent = "등록된 인장 아이콘이 없습니다. 위에서 이미지 파일이나 URL을 등록하세요.";
+                iconList.appendChild(empty);
+                return;
+            }
+
+            savedIcons.forEach(function (icon) {
+                const card = document.createElement("div");
+                card.className = "icon-card";
+
+                const img = document.createElement("img");
+                img.src = icon.src;
+                img.alt = icon.name || "인장 아이콘";
+                img.onerror = function () {
+                    this.style.opacity = "0.35";
+                };
+
+                const name = document.createElement("span");
+                name.className = "icon-card-name";
+                name.textContent = icon.name || "인장";
+                name.title = icon.name || "인장";
+
+                const actions = document.createElement("div");
+                actions.className = "icon-card-actions";
+
+                const useButton = document.createElement("button");
+                useButton.type = "button";
+                useButton.textContent = "적용";
+                useButton.addEventListener("click", function () {
+                    applySavedIcon(icon.src);
+                });
+
+                const deleteButton = document.createElement("button");
+                deleteButton.type = "button";
+                deleteButton.className = "delete-icon";
+                deleteButton.textContent = "삭제";
+                deleteButton.addEventListener("click", function () {
+                    savedIcons = savedIcons.filter(function (saved) {
+                        return saved.id !== icon.id;
+                    });
+                    saveIcons();
+                    renderIconLibrary();
+                });
+
+                actions.appendChild(useButton);
+                actions.appendChild(deleteButton);
+                card.appendChild(img);
+                card.appendChild(name);
+                card.appendChild(actions);
+                iconList.appendChild(card);
+            });
+        }
+
+        function registerIcon(src, name) {
+            const trimmed = String(src || "").trim();
+            if (!trimmed) {
+                return;
+            }
+
+            savedIcons.push({
+                id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+                src: trimmed,
+                name: name || "인장 " + (savedIcons.length + 1)
+            });
+
+            saveIcons();
+            renderIconLibrary();
+        }
+
+        iconFileInput.addEventListener("change", function () {
+            const file = this.files[0];
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                registerIcon(event.target.result, file.name.replace(/\\.[^.]+$/, ""));
+                iconFileInput.value = "";
+            };
+            reader.onerror = function (err) {
+                showError("이미지 파일 읽기 중 오류", err);
+            };
+            reader.readAsDataURL(file);
+        });
+
+        addIconUrlButton.addEventListener("click", function () {
+            const url = iconUrlInput.value.trim();
+            if (!url) {
+                alert("이미지 URL을 입력해주세요.");
+                return;
+            }
+
+            registerIcon(url, "URL 인장 " + (savedIcons.length + 1));
+            iconUrlInput.value = "";
+        });
+
+        toggleIconPanelButton.addEventListener("click", function () {
+            const isHidden = iconLibraryPanel.style.display !== "block";
+            iconLibraryPanel.style.display = isHidden ? "block" : "none";
+            if (isHidden) {
+                renderIconLibrary();
+                updateIconTargetSelect();
+            }
+        });
+
+        renderIconLibrary();
+        updateIconTargetSelect();
 
 
         /*
@@ -756,6 +1274,7 @@
 
                     badge.textContent =
                         item.content;
+                    badge.dataset.separatorIdx = String(i);
 
 
                     divider.appendChild(badge);
@@ -1029,6 +1548,8 @@
             "change",
             async function () {
 
+                errorBanner.style.display = "none";
+
                 const file =
                     this.files[0];
 
@@ -1036,17 +1557,25 @@
                     return;
                 }
 
+                try {
 
-                const text =
-                    await file.text();
-
-
-                parsedMessages =
-                    parseChat(text);
+                    const text =
+                        await file.text();
 
 
-                buildNicknamePanel(parsedMessages);
-                renderChat(parsedMessages);
+                    parsedMessages =
+                        parseChat(text);
+
+
+                    buildNicknamePanel(parsedMessages);
+                    buildSeparatorPanel(parsedMessages);
+                    updateIconTargetSelect();
+                    renderChat(parsedMessages);
+
+                } catch (err) {
+
+                    showError("파일 처리 중 오류", err);
+                }
             }
         );
 
