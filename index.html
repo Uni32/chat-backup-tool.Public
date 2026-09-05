@@ -394,10 +394,15 @@
             color: #1c1c1e;
         }
 
-        .library-section + .library-section {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e5e7;
+        .stamp-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .stamp-col {
+            min-width: 0;
         }
 
         .library-section-title {
@@ -544,6 +549,10 @@
                 flex: 1 1 100px;
                 min-width: 80px;
             }
+
+            .stamp-columns {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -609,44 +618,33 @@
         <div class="editor-panel-inner">
             <p class="editor-panel-title">인장 · 색상 보관함</p>
 
-            <div class="library-section">
-                <p class="library-section-title">아이콘</p>
-                <p class="editor-panel-help">이미지 파일 또는 이미지 URL을 등록해두면 다음에도 계속 사용할 수 있습니다. (브라우저의 localStorage에 저장)</p>
-
-                <div class="icon-library-tools">
-                    <input id="iconFileInput" type="file" accept="image/*">
-                    <input id="iconUrlInput" type="text" placeholder="이미지 URL을 입력하세요">
-                    <button id="addIconUrlButton" type="button">URL 등록</button>
+            <div class="stamp-columns">
+                <div class="stamp-col">
+                    <p class="library-section-title">색상</p>
+                    <div class="icon-library-tools">
+                        <input id="colorHexInput" type="text" placeholder="#a8323a 형태로 붙여넣기">
+                        <button id="addColorButton" type="button">등록</button>
+                    </div>
                 </div>
 
-                <div class="icon-target-row">
-                    <span>적용할 닉네임</span>
-                    <select id="iconTargetSelect">
-                        <option value="">TXT를 먼저 불러오세요</option>
-                    </select>
+                <div class="stamp-col">
+                    <p class="library-section-title">아이콘</p>
+                    <div class="icon-library-tools">
+                        <input id="iconFileInput" type="file" accept="image/*">
+                        <input id="iconUrlInput" type="text" placeholder="이미지 URL을 입력하세요">
+                        <button id="addIconUrlButton" type="button">URL 등록</button>
+                    </div>
                 </div>
-
-                <div id="iconList" class="icon-list"></div>
             </div>
 
-            <div class="library-section">
-                <p class="library-section-title">색상</p>
-                <p class="editor-panel-help">헥사코드를 붙여넣고 등록해두면 다음에도 목록에서 바로 골라 쓸 수 있습니다. (브라우저의 localStorage에 저장)</p>
-
-                <div class="icon-library-tools">
-                    <input id="colorHexInput" type="text" placeholder="#a8323a 형태로 붙여넣기">
-                    <button id="addColorButton" type="button">등록</button>
-                </div>
-
-                <div class="icon-target-row">
-                    <span>적용할 닉네임</span>
-                    <select id="colorTargetSelect">
-                        <option value="">TXT를 먼저 불러오세요</option>
-                    </select>
-                </div>
-
-                <div id="colorList" class="icon-list"></div>
+            <div class="icon-target-row">
+                <span>적용할 닉네임</span>
+                <select id="stampTargetSelect">
+                    <option value="">TXT를 먼저 불러오세요</option>
+                </select>
             </div>
+
+            <div id="stampList" class="icon-list"></div>
         </div>
     </div>
 
@@ -708,13 +706,12 @@
         const iconFileInput = document.getElementById("iconFileInput");
         const iconUrlInput = document.getElementById("iconUrlInput");
         const addIconUrlButton = document.getElementById("addIconUrlButton");
-        const iconTargetSelect = document.getElementById("iconTargetSelect");
-        const iconList = document.getElementById("iconList");
 
         const colorHexInput = document.getElementById("colorHexInput");
         const addColorButton = document.getElementById("addColorButton");
-        const colorTargetSelect = document.getElementById("colorTargetSelect");
-        const colorList = document.getElementById("colorList");
+
+        const stampTargetSelect = document.getElementById("stampTargetSelect");
+        const stampList = document.getElementById("stampList");
 
         const errorBanner = document.getElementById("errorBanner");
 
@@ -1034,10 +1031,8 @@
             syncRawTextFromMessages();
             renderChat(parsedMessages);
             buildNicknamePanel(parsedMessages);
-            updateIconTargetSelect();
-            iconTargetSelect.value = newNickname;
-            updateColorTargetSelect();
-            colorTargetSelect.value = newNickname;
+            updateStampTargetSelect();
+            stampTargetSelect.value = newNickname;
             return true;
         }
 
@@ -1195,8 +1190,7 @@
             });
 
             nicknamePanel.style.display = "block";
-            updateIconTargetSelect();
-            updateColorTargetSelect();
+            updateStampTargetSelect();
         }
 
 
@@ -1227,37 +1221,37 @@
             }
         }
 
-        function updateIconTargetSelect() {
+        function updateStampTargetSelect() {
             const nicknames = Object.keys(userOverrides);
-            const current = iconTargetSelect.value;
+            const current = stampTargetSelect.value;
 
-            iconTargetSelect.innerHTML = "";
+            stampTargetSelect.innerHTML = "";
 
             if (!nicknames.length) {
                 const option = document.createElement("option");
                 option.value = "";
                 option.textContent = "TXT를 먼저 불러오세요";
-                iconTargetSelect.appendChild(option);
-                iconTargetSelect.disabled = true;
+                stampTargetSelect.appendChild(option);
+                stampTargetSelect.disabled = true;
                 return;
             }
 
-            iconTargetSelect.disabled = false;
+            stampTargetSelect.disabled = false;
 
             nicknames.forEach(function (nickname) {
                 const option = document.createElement("option");
                 option.value = nickname;
                 option.textContent = nickname;
-                iconTargetSelect.appendChild(option);
+                stampTargetSelect.appendChild(option);
             });
 
             if (nicknames.includes(current)) {
-                iconTargetSelect.value = current;
+                stampTargetSelect.value = current;
             }
         }
 
         function applySavedIcon(src) {
-            const nickname = iconTargetSelect.value;
+            const nickname = stampTargetSelect.value;
 
             if (!nickname || !userOverrides[nickname]) {
                 alert("먼저 적용할 닉네임을 선택해주세요.");
@@ -1267,18 +1261,18 @@
             userOverrides[nickname].image = src;
             buildNicknamePanel(parsedMessages);
             renderChat(parsedMessages);
-            updateIconTargetSelect();
-            iconTargetSelect.value = nickname;
+            updateStampTargetSelect();
+            stampTargetSelect.value = nickname;
         }
 
-        function renderIconLibrary() {
-            iconList.innerHTML = "";
+        function renderStampLibrary() {
+            stampList.innerHTML = "";
 
-            if (!savedIcons.length) {
+            if (!savedIcons.length && !savedColors.length) {
                 const empty = document.createElement("div");
                 empty.className = "icon-empty";
-                empty.textContent = "등록된 인장 아이콘이 없습니다. 위에서 이미지 파일이나 URL을 등록하세요.";
-                iconList.appendChild(empty);
+                empty.textContent = "등록된 항목이 없습니다. 위에서 이미지나 URL, 색상을 등록해주세요.";
+                stampList.appendChild(empty);
                 return;
             }
 
@@ -1317,7 +1311,7 @@
                         return saved.id !== icon.id;
                     });
                     saveIcons();
-                    renderIconLibrary();
+                    renderStampLibrary();
                 });
 
                 actions.appendChild(useButton);
@@ -1325,7 +1319,50 @@
                 card.appendChild(img);
                 card.appendChild(name);
                 card.appendChild(actions);
-                iconList.appendChild(card);
+                stampList.appendChild(card);
+            });
+
+            savedColors.forEach(function (color) {
+                const card = document.createElement("div");
+                card.className = "icon-card";
+
+                const swatch = document.createElement("div");
+                swatch.className = "color-card-swatch";
+                swatch.style.background = color.hex;
+
+                const name = document.createElement("span");
+                name.className = "icon-card-name";
+                name.textContent = color.hex;
+                name.title = color.hex;
+
+                const actions = document.createElement("div");
+                actions.className = "icon-card-actions";
+
+                const useButton = document.createElement("button");
+                useButton.type = "button";
+                useButton.textContent = "적용";
+                useButton.addEventListener("click", function () {
+                    applySavedColor(color.hex);
+                });
+
+                const deleteButton = document.createElement("button");
+                deleteButton.type = "button";
+                deleteButton.className = "delete-icon";
+                deleteButton.textContent = "삭제";
+                deleteButton.addEventListener("click", function () {
+                    savedColors = savedColors.filter(function (saved) {
+                        return saved.id !== color.id;
+                    });
+                    saveColors();
+                    renderStampLibrary();
+                });
+
+                actions.appendChild(useButton);
+                actions.appendChild(deleteButton);
+                card.appendChild(swatch);
+                card.appendChild(name);
+                card.appendChild(actions);
+                stampList.appendChild(card);
             });
         }
 
@@ -1342,7 +1379,7 @@
             });
 
             saveIcons();
-            renderIconLibrary();
+            renderStampLibrary();
         }
 
         iconFileInput.addEventListener("change", function () {
@@ -1431,37 +1468,8 @@
             return v.toLowerCase();
         }
 
-        function updateColorTargetSelect() {
-            const nicknames = Object.keys(userOverrides);
-            const current = colorTargetSelect.value;
-
-            colorTargetSelect.innerHTML = "";
-
-            if (!nicknames.length) {
-                const option = document.createElement("option");
-                option.value = "";
-                option.textContent = "TXT를 먼저 불러오세요";
-                colorTargetSelect.appendChild(option);
-                colorTargetSelect.disabled = true;
-                return;
-            }
-
-            colorTargetSelect.disabled = false;
-
-            nicknames.forEach(function (nickname) {
-                const option = document.createElement("option");
-                option.value = nickname;
-                option.textContent = nickname;
-                colorTargetSelect.appendChild(option);
-            });
-
-            if (nicknames.includes(current)) {
-                colorTargetSelect.value = current;
-            }
-        }
-
         function applySavedColor(hex) {
-            const nickname = colorTargetSelect.value;
+            const nickname = stampTargetSelect.value;
 
             if (!nickname || !userOverrides[nickname]) {
                 alert("먼저 적용할 닉네임을 선택해주세요.");
@@ -1471,64 +1479,11 @@
             userOverrides[nickname].color = hex;
             buildNicknamePanel(parsedMessages);
             renderChat(parsedMessages);
-            updateColorTargetSelect();
-            colorTargetSelect.value = nickname;
+            updateStampTargetSelect();
+            stampTargetSelect.value = nickname;
         }
 
-        function renderColorLibrary() {
-            colorList.innerHTML = "";
 
-            if (!savedColors.length) {
-                const empty = document.createElement("div");
-                empty.className = "icon-empty";
-                empty.textContent = "등록된 색상이 없습니다. 위에서 헥사코드를 붙여넣어 등록하세요.";
-                colorList.appendChild(empty);
-                return;
-            }
-
-            savedColors.forEach(function (color) {
-                const card = document.createElement("div");
-                card.className = "icon-card";
-
-                const swatch = document.createElement("div");
-                swatch.className = "color-card-swatch";
-                swatch.style.background = color.hex;
-
-                const name = document.createElement("span");
-                name.className = "icon-card-name";
-                name.textContent = color.hex;
-                name.title = color.hex;
-
-                const actions = document.createElement("div");
-                actions.className = "icon-card-actions";
-
-                const useButton = document.createElement("button");
-                useButton.type = "button";
-                useButton.textContent = "적용";
-                useButton.addEventListener("click", function () {
-                    applySavedColor(color.hex);
-                });
-
-                const deleteButton = document.createElement("button");
-                deleteButton.type = "button";
-                deleteButton.className = "delete-icon";
-                deleteButton.textContent = "삭제";
-                deleteButton.addEventListener("click", function () {
-                    savedColors = savedColors.filter(function (saved) {
-                        return saved.id !== color.id;
-                    });
-                    saveColors();
-                    renderColorLibrary();
-                });
-
-                actions.appendChild(useButton);
-                actions.appendChild(deleteButton);
-                card.appendChild(swatch);
-                card.appendChild(name);
-                card.appendChild(actions);
-                colorList.appendChild(card);
-            });
-        }
 
         function registerColor(hexRaw) {
             const hex = normalizeHex(hexRaw);
@@ -1551,7 +1506,7 @@
             });
 
             saveColors();
-            renderColorLibrary();
+            renderStampLibrary();
 
             return hex;
         }
@@ -1578,17 +1533,13 @@
             stampLibraryPanel.style.display = isHidden ? "block" : "none";
 
             if (isHidden) {
-                renderIconLibrary();
-                updateIconTargetSelect();
-                renderColorLibrary();
-                updateColorTargetSelect();
+                renderStampLibrary();
+                updateStampTargetSelect();
             }
         });
 
-        renderIconLibrary();
-        updateIconTargetSelect();
-        renderColorLibrary();
-        updateColorTargetSelect();
+        renderStampLibrary();
+        updateStampTargetSelect();
 
 
         /*
@@ -1922,8 +1873,7 @@
                 parsedMessages = parseChat(this.value);
                 buildNicknamePanel(parsedMessages);
                 renderChat(parsedMessages);
-                updateIconTargetSelect();
-                updateColorTargetSelect();
+                updateStampTargetSelect();
                 errorBanner.style.display = "none";
             } catch (err) {
                 showError("텍스트 처리 중 오류", err);
@@ -1960,8 +1910,7 @@
                     rawTextInput.value = text;
                     rawTextPanel.style.display = "block";
                     buildNicknamePanel(parsedMessages);
-                    updateIconTargetSelect();
-                    updateColorTargetSelect();
+                    updateStampTargetSelect();
                     renderChat(parsedMessages);
 
                 } catch (err) {
