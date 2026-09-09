@@ -10,8 +10,13 @@
             box-sizing: border-box;
         }
 
-        body {
+        html, body {
+            height: 100%;
             margin: 0;
+            overflow: hidden;
+        }
+
+        body {
             font-family:
                 -apple-system,
                 BlinkMacSystemFont,
@@ -21,27 +26,50 @@
             color: #1c1c1e;
         }
 
-        /* 상단 UI */
-        .toolbar {
-            position: sticky;
-            top: 0;
-            z-index: 10;
+        /* 전체 레이아웃: 좌(텍스트 편집) / 우(보관함 + 미리보기) */
+        .app-layout {
+            display: flex;
+            height: 100vh;
+        }
+
+        .left-col {
+            flex: 0 0 420px;
+            width: 420px;
+
+            height: 100vh;
+            overflow: hidden;
 
             padding: 16px;
+
             background: #ffffff;
-            border-bottom: 1px solid #ddd;
-        }
+            border-right: 1px solid #ddd;
 
-        .toolbar h1 {
-            margin: 0 0 12px;
-            font-size: 20px;
-        }
-
-        .toolbar-actions {
             display: flex;
+            flex-direction: column;
+        }
+
+        .left-col-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             gap: 8px;
             flex-wrap: wrap;
-            align-items: center;
+
+            margin-bottom: 10px;
+        }
+
+        .right-col {
+            flex: 1;
+            min-width: 0;
+
+            height: 100vh;
+            overflow-y: auto;
+
+            padding: 16px;
+
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
 
         button,
@@ -84,17 +112,15 @@
         }
 
         .toolbar-hint {
+            display: block;
             font-size: 12px;
             color: #8e8e93;
-            margin-left: 4px;
+            margin: 0 0 10px;
         }
 
         /* 닉네임 설정 패널 */
         .nickname-panel {
             display: none;
-            max-width: 900px;
-            margin: 16px auto 0;
-            padding: 0 16px;
         }
 
         .nickname-panel-inner {
@@ -177,11 +203,36 @@
             font-size: 12px;
         }
 
-        /* 채팅 영역 */
+        /* 채팅(양식) 미리보기 */
+        .preview-card {
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 14px 16px;
+
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .preview-card-title {
+            margin: 0 0 10px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1c1c1e;
+        }
+
+        .preview-card-scroll {
+            max-height: 60vh;
+            overflow-y: auto;
+
+            border: 1px solid #e5e5e7;
+            border-radius: 8px;
+            background: #f5f5f7;
+        }
+
         #chat {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 24px 16px 60px;
+            padding: 20px 16px;
         }
 
         /* 메시지 */
@@ -325,12 +376,12 @@
             padding: 60px 20px;
         }
 
-        /* 전체 TXT 텍스트 편집 */
+        /* 전체 TXT 텍스트 편집 (좌측 영역을 가득 채움) */
         .raw-text-panel {
-            display: block;
-            max-width: 900px;
-            margin: 16px auto 0;
-            padding: 0 16px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            flex: 1;
         }
 
         .raw-text-panel-inner {
@@ -338,6 +389,11 @@
             border: 1px solid #ddd;
             border-radius: 10px;
             padding: 14px 16px;
+
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            flex: 1;
         }
 
         .raw-text-panel-title {
@@ -355,11 +411,12 @@
 
         #rawTextInput {
             width: 100%;
-            min-height: 280px;
+            flex: 1;
+            min-height: 0;
             padding: 12px;
             border: 1px solid #ddd;
             border-radius: 8px;
-            resize: vertical;
+            resize: none;
             outline: none;
             background: #fafafa;
             color: #1c1c1e;
@@ -372,12 +429,9 @@
             background: #fff;
         }
 
-        /* 편집 패널 공통 */
+        /* 편집 패널 공통 (인장 · 색상 보관함) */
         .editor-panel {
-            display: none;
-            max-width: 900px;
-            margin: 16px auto 0;
-            padding: 0 16px;
+            display: block;
         }
 
         .editor-panel-inner {
@@ -387,11 +441,36 @@
             padding: 14px 16px;
         }
 
+        .editor-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
         .editor-panel-title {
-            margin: 0 0 12px;
+            margin: 0;
             font-size: 14px;
             font-weight: 700;
             color: #1c1c1e;
+        }
+
+        .editor-panel-toggle {
+            font-size: 12px;
+            color: #8e8e93;
+            transition: transform 0.2s ease;
+        }
+
+        .editor-panel.collapsed .editor-panel-toggle {
+            transform: rotate(-90deg);
+        }
+
+        .editor-panel-body {
+            margin-top: 12px;
+        }
+
+        .editor-panel.collapsed .editor-panel-body {
+            display: none;
         }
 
         .stamp-columns {
@@ -519,10 +598,16 @@
             color: #636366;
         }
 
-        /* 오류 배너 */
+        /* 오류 배너 (화면 상단 고정 오버레이) */
         .error-banner {
-            max-width: 900px;
-            margin: 16px auto 0;
+            position: fixed;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+
+            max-width: 640px;
+            width: calc(100% - 32px);
             padding: 12px 16px;
 
             background: #fdecea;
@@ -533,9 +618,47 @@
             font-size: 13px;
             white-space: pre-wrap;
             word-break: break-word;
+
+            box-shadow: 0 4px 14px rgba(0,0,0,0.15);
         }
 
         /* 모바일 */
+        @media (max-width: 900px) {
+            html, body {
+                height: auto;
+                overflow: auto;
+            }
+
+            .app-layout {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .left-col,
+            .right-col {
+                flex: none;
+                width: 100%;
+                height: auto;
+                overflow: visible;
+                border-right: none;
+                border-bottom: 1px solid #ddd;
+            }
+
+            .raw-text-panel,
+            .raw-text-panel-inner {
+                flex: none;
+            }
+
+            #rawTextInput {
+                min-height: 280px;
+                resize: vertical;
+            }
+
+            .preview-card-scroll {
+                max-height: 70vh;
+            }
+        }
+
         @media (max-width: 600px) {
             #chat {
                 padding: 18px 10px 40px;
@@ -559,39 +682,38 @@
 
 <body>
 
-    <!-- 상단 UI -->
-    <div class="toolbar">
-        <h1>채팅 백업</h1>
+    <!-- 오류 발생 시 여기에 내용이 표시됩니다 -->
+    <div id="errorBanner" class="error-banner" style="display:none;"></div>
 
-        <div class="toolbar-actions">
-            <label class="file-input-label" for="fileInput">TXT 파일 불러오기 (선택)</label>
-            <input
-                id="fileInput"
-                type="file"
-                accept=".txt,text/plain"
-            >
 
-            <button id="copyButton">
-                HTML 복사
-            </button>
+    <div class="app-layout">
 
-            <button id="toggleStampPanelButton" type="button">
-                인장 · 색상 보관함
-            </button>
+        <!-- 좌측: 텍스트 편집창 고정 영역 -->
+        <div class="left-col">
+
+            <div class="left-col-toolbar">
+                <label class="file-input-label" for="fileInput">TXT 파일 불러오기 (선택)</label>
+                <input
+                    id="fileInput"
+                    type="file"
+                    accept=".txt,text/plain"
+                >
+
+                <button id="copyButton">
+                    HTML 복사
+                </button>
+            </div>
 
             <span class="toolbar-hint">
                 말풍선을 클릭하면 내용을 바로 수정할 수 있어요.
             </span>
-        </div>
-    </div>
 
-
-    <!-- 전체 TXT 텍스트 편집 -->
-    <div id="rawTextPanel" class="raw-text-panel">
-        <div class="raw-text-panel-inner">
-            <p class="raw-text-panel-title">전체 TXT 텍스트 입력 / 편집</p>
-            <p class="raw-text-panel-help">TXT 파일을 첨부하지 않아도 됩니다. 아래 칸에 채팅 원문을 그대로 붙여넣으면 입력 즉시 아래 채팅 화면에 반영됩니다. 말풍선을 직접 수정한 내용도 이곳에 반영됩니다.</p>
-            <textarea id="rawTextInput" spellcheck="false" wrap="off" placeholder="예:
+            <!-- 전체 TXT 텍스트 편집 -->
+            <div id="rawTextPanel" class="raw-text-panel">
+                <div class="raw-text-panel-inner">
+                    <p class="raw-text-panel-title">전체 TXT 텍스트 입력 / 편집</p>
+                    <p class="raw-text-panel-help">TXT 파일을 첨부하지 않아도 됩니다. 아래 칸에 채팅 원문을 그대로 붙여넣으면 입력 즉시 오른쪽 미리보기에 반영됩니다. 말풍선을 직접 수정한 내용도 이곳에 반영됩니다.</p>
+                    <textarea id="rawTextInput" spellcheck="false" wrap="off" placeholder="예:
 [과과] [오후 10:33] ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ
 [과과] [오후 10:33] 그간 수상하게 붙어다녔는데
 [과과] [오후 10:33] 납득하지 않을까
@@ -599,67 +721,83 @@
 /~ 뫄뫄, 솨솨 인생에 개입 (정설) ~/
 
 [놔놔] [오후 10:33] 뫄뫄가 개인적으로 본인 삶의 권태를 표현할 일이 있을까..."></textarea>
-        </div>
-    </div>
-
-
-    <!-- 닉네임별 인장 설정 -->
-    <div id="nicknamePanel" class="nickname-panel">
-        <div class="nickname-panel-inner">
-            <p class="nickname-panel-title">닉네임별 인장 설정 (색상 / 이미지)</p>
-            <div id="nicknameRows"></div>
-        </div>
-    </div>
-
-
-    <!-- 자주 사용하는 인장 아이콘 보관함 -->
-    <!-- 인장 아이콘 · 색상 보관함 (하나의 버튼으로 함께 관리) -->
-    <div id="stampLibraryPanel" class="editor-panel">
-        <div class="editor-panel-inner">
-            <p class="editor-panel-title">인장 · 색상 보관함</p>
-
-            <div class="stamp-columns">
-                <div class="stamp-col">
-                    <p class="library-section-title">색상</p>
-                    <div class="icon-library-tools">
-                        <input id="colorHexInput" type="text" placeholder="#a8323a 형태로 붙여넣기">
-                        <button id="addColorButton" type="button">등록</button>
-                    </div>
                 </div>
+            </div>
 
-                <div class="stamp-col">
-                    <p class="library-section-title">아이콘</p>
-                    <div class="icon-library-tools">
-                        <input id="iconFileInput" type="file" accept="image/*">
-                        <input id="iconUrlInput" type="text" placeholder="이미지 URL을 입력하세요">
-                        <button id="addIconUrlButton" type="button">URL 등록</button>
+        </div>
+
+
+        <!-- 우측: 보관함 + 미리보기 -->
+        <div class="right-col">
+
+            <!-- 닉네임별 인장 설정 -->
+            <div id="nicknamePanel" class="nickname-panel">
+                <div class="nickname-panel-inner">
+                    <p class="nickname-panel-title">닉네임별 인장 설정 (색상 / 이미지)</p>
+                    <div id="nicknameRows"></div>
+                </div>
+            </div>
+
+
+            <!-- 인장 아이콘 · 색상 보관함 (제목을 클릭하면 최소화) -->
+            <div id="stampLibraryPanel" class="editor-panel">
+                <div class="editor-panel-inner">
+
+                    <div class="editor-panel-header" id="stampPanelHeader">
+                        <p class="editor-panel-title">인장 · 색상 보관함</p>
+                        <span class="editor-panel-toggle" id="stampPanelToggle">▾</span>
+                    </div>
+
+                    <div class="editor-panel-body" id="stampPanelBody">
+
+                        <div class="stamp-columns">
+                            <div class="stamp-col">
+                                <p class="library-section-title">색상</p>
+                                <div class="icon-library-tools">
+                                    <input id="colorHexInput" type="text" placeholder="#a8323a 형태로 붙여넣기">
+                                    <button id="addColorButton" type="button">등록</button>
+                                </div>
+                            </div>
+
+                            <div class="stamp-col">
+                                <p class="library-section-title">아이콘</p>
+                                <div class="icon-library-tools">
+                                    <input id="iconFileInput" type="file" accept="image/*">
+                                    <input id="iconUrlInput" type="text" placeholder="이미지 URL을 입력하세요">
+                                    <button id="addIconUrlButton" type="button">URL 등록</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="icon-target-row">
+                            <span>적용할 닉네임</span>
+                            <select id="stampTargetSelect">
+                                <option value="">TXT를 먼저 불러오세요</option>
+                            </select>
+                        </div>
+
+                        <div id="stampList" class="icon-list"></div>
+
                     </div>
                 </div>
             </div>
 
-            <div class="icon-target-row">
-                <span>적용할 닉네임</span>
-                <select id="stampTargetSelect">
-                    <option value="">TXT를 먼저 불러오세요</option>
-                </select>
+
+            <!-- 양식 미리보기 (작은 스크롤 박스) -->
+            <div class="preview-card">
+                <p class="preview-card-title">양식 미리보기</p>
+                <div class="preview-card-scroll">
+                    <div id="chat">
+                        <div class="empty">
+                            TXT 파일을 선택하세요.
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div id="stampList" class="icon-list"></div>
         </div>
+
     </div>
-
-
-    <!-- 오류 발생 시 여기에 내용이 표시됩니다 -->
-    <div id="errorBanner" class="error-banner" style="display:none;"></div>
-
-
-    <!-- 실제 채팅 영역 -->
-    <div id="chat">
-        <div class="empty">
-            TXT 파일을 선택하세요.
-        </div>
-    </div>
-
 
     <!-- ============================================================
          사용자 설정 (기본값)
@@ -700,8 +838,8 @@
         const nicknamePanel = document.getElementById("nicknamePanel");
         const nicknameRows = document.getElementById("nicknameRows");
 
-        const toggleStampPanelButton = document.getElementById("toggleStampPanelButton");
         const stampLibraryPanel = document.getElementById("stampLibraryPanel");
+        const stampPanelHeader = document.getElementById("stampPanelHeader");
 
         const iconFileInput = document.getElementById("iconFileInput");
         const iconUrlInput = document.getElementById("iconUrlInput");
@@ -1528,14 +1666,8 @@
             }
         });
 
-        toggleStampPanelButton.addEventListener("click", function () {
-            const isHidden = stampLibraryPanel.style.display !== "block";
-            stampLibraryPanel.style.display = isHidden ? "block" : "none";
-
-            if (isHidden) {
-                renderStampLibrary();
-                updateStampTargetSelect();
-            }
+        stampPanelHeader.addEventListener("click", function () {
+            stampLibraryPanel.classList.toggle("collapsed");
         });
 
         renderStampLibrary();
