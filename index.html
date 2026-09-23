@@ -1,11 +1,66 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>채팅 백업</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chat · Roll20 Backup</title>
 
-    <style>
+<style>
+    /* =========================================================
+       탭 레이아웃 (공통)
+       ========================================================= */
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+
+    body {
+        display: flex;
+        flex-direction: column;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #f5f5f7;
+        color: #1c1c1e;
+    }
+
+    .tab-bar {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: calc(8px + env(safe-area-inset-top, 0px)) 16px 8px;
+        background: #ffffff;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .tab-bar .tab-btn {
+        border: 0;
+        border-radius: 8px;
+        padding: 8px 16px;
+        background: transparent;
+        color: #636366;
+        font: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .tab-bar .tab-btn:hover { background: #f0f0f2; opacity: 1; }
+    .tab-bar .tab-btn[aria-selected="true"] { background: #1c1c1e; color: #ffffff; }
+    .tab-bar .tab-btn:focus-visible { outline: 2px solid #8aa8ff; outline-offset: 2px; }
+
+    .tab-panels { flex: 1; min-height: 0; }
+    .tab-panel { height: 100%; }
+    .tab-panel[hidden] { display: none !important; }
+    .tab-panel > .app-layout { display: flex; height: 100%; }
+
+    @media (max-width: 900px) {
+        body { display: block; }
+        .tab-bar { position: sticky; top: 0; z-index: 100; }
+        .tab-panels, .tab-panel { height: auto; }
+        .tab-panel > .app-layout { height: auto; }
+    }
+</style>
+
+<!-- =========================================================
+     Chat Backup (index.html) 스타일
+     ========================================================= -->
+<style>
         * {
             box-sizing: border-box;
         }
@@ -29,14 +84,14 @@
         /* 전체 레이아웃: 좌(텍스트 편집) / 우(보관함 + 미리보기) */
         .app-layout {
             display: flex;
-            height: 100vh;
+            height: 100%;
         }
 
         .left-col {
             flex: 0 0 420px;
             width: 420px;
 
-            height: 100vh;
+            height: 100%;
             overflow: hidden;
 
             padding: 16px;
@@ -62,7 +117,7 @@
             flex: 1;
             min-width: 0;
 
-            height: 100vh;
+            height: 100%;
             overflow-y: auto;
 
             padding: 16px;
@@ -527,13 +582,13 @@
             font-size: 12px;
         }
 
-        .icon-list {
+        #chatApp .icon-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
             gap: 10px;
         }
 
-        .icon-empty {
+        #chatApp .icon-empty {
             grid-column: 1 / -1;
             padding: 20px;
             text-align: center;
@@ -543,7 +598,7 @@
             border-radius: 8px;
         }
 
-        .icon-card {
+        #chatApp .icon-card {
             position: relative;
             min-width: 0;
             padding: 10px 8px 8px;
@@ -553,7 +608,7 @@
             text-align: center;
         }
 
-        .icon-card img {
+        #chatApp .icon-card img {
             width: 52px;
             height: 52px;
             display: block;
@@ -570,7 +625,7 @@
             border: 1px solid rgba(0,0,0,0.08);
         }
 
-        .icon-card-name {
+        #chatApp .icon-card-name {
             display: block;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -580,12 +635,12 @@
             color: #636366;
         }
 
-        .icon-card-actions {
+        #chatApp .icon-card-actions {
             display: flex;
             gap: 4px;
         }
 
-        .icon-card-actions button {
+        #chatApp .icon-card-actions button {
             flex: 1;
             min-width: 0;
             padding: 6px 5px;
@@ -593,7 +648,7 @@
             font-size: 11px;
         }
 
-        .icon-card-actions .delete-icon {
+        #chatApp .icon-card-actions .delete-icon {
             background: #e5e5ea;
             color: #636366;
         }
@@ -678,9 +733,534 @@
             }
         }
     </style>
+
+<!-- =========================================================
+     Roll20 Backup (Roll20 → Tistory Backup Editor) 스타일
+     ========================================================= -->
+<style>
+    * { box-sizing: border-box; }
+
+    html, body {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+    }
+
+    #r20App {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    
+
+    /* 좌측 */
+    .left-col {
+        flex: 0 0 420px;
+        width: 420px;
+        height: 100%;
+        overflow: hidden;
+        padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px));
+        background: #fff;
+        border-right: 1px solid #ddd;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .left-col-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+    }
+
+    /* 우측 */
+    .right-col {
+        flex: 1;
+        min-width: 0;
+        height: 100%;
+        overflow-y: auto;
+        padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px));
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    button, input, textarea, select { font: inherit; }
+
+    .file-input-label {
+        display: inline-flex;
+        align-items: center;
+        padding: 9px 14px;
+        border-radius: 8px;
+        background: #f0f0f2;
+        color: #1c1c1e;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    .file-input-label:hover { background: #e5e5ea; }
+    #r20FileInput { display: none; }
+
+    button {
+        border: 0;
+        border-radius: 8px;
+        padding: 9px 14px;
+        cursor: pointer;
+        background: #1c1c1e;
+        color: #fff;
+    }
+    button:hover { opacity: .85; }
+    button:disabled { opacity: .35; cursor: not-allowed; }
+    button.ghost { background: #f0f0f2; color: #1c1c1e; }
+    button.ghost:hover { background: #e5e5ea; opacity: 1; }
+
+    .toolbar-hint {
+        display: block;
+        font-size: 12px;
+        color: #8e8e93;
+        margin: 0 0 10px;
+    }
+
+    /* 좌측 입력창 */
+    .raw-panel {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        flex: 1;
+    }
+    .raw-panel-inner {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        flex: 1;
+    }
+    .raw-panel-title {
+        margin: 0 0 6px;
+        font-size: 14px;
+        font-weight: 700;
+    }
+    .raw-panel-help {
+        margin: 0 0 10px;
+        font-size: 12px;
+        color: #8e8e93;
+        line-height: 1.5;
+    }
+    .raw-panel-help code {
+        font-size: 11px;
+        background: #f0f0f2;
+        padding: 1px 4px;
+        border-radius: 4px;
+    }
+    #r20Input {
+        width: 100%;
+        flex: 1;
+        min-height: 0;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        resize: none;
+        outline: none;
+        background: #fafafa;
+        color: #1c1c1e;
+        font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    #r20Input:focus {
+        border-color: #8aa8ff;
+        box-shadow: 0 0 0 2px #eef4ff;
+        background: #fff;
+    }
+
+    /* 우측 카드 공통 */
+    .card {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 14px 16px;
+        flex-shrink: 0;
+    }
+    .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+    }
+    .card-title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+    }
+    .card-toggle {
+        font-size: 12px;
+        color: #8e8e93;
+        transition: transform .2s ease;
+    }
+    .card.collapsed .card-toggle { transform: rotate(-90deg); }
+    .card-body { margin-top: 12px; }
+    .card.collapsed .card-body { display: none; }
+
+    .card-help {
+        margin: 0 0 10px;
+        font-size: 12px;
+        color: #8e8e93;
+        line-height: 1.5;
+    }
+
+    .tool-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    /* 선택 메시지 배경색 */
+    .sel-status {
+        font-size: 12px;
+        color: #636366;
+        margin: 0 0 10px;
+        min-height: 16px;
+    }
+    .sel-tools {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    button.danger { background: #d92d20; color: #fff; }
+    button.danger:disabled { background: #d92d20; }
+
+    /* 아바타 교체(왼쪽) + 메시지 편집(오른쪽) 통합 카드 */
+    .edit-columns {
+        display: grid;
+        grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+        gap: 20px;
+    }
+    .edit-col { min-width: 0; }
+    .edit-col + .edit-col {
+        border-left: 1px solid #e5e5e7;
+        padding-left: 20px;
+    }
+    .edit-col-title {
+        margin: 0 0 6px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #3a3a3c;
+    }
+    @media (max-width: 1100px) {
+        .edit-columns { grid-template-columns: minmax(0, 1fr); }
+        .edit-col + .edit-col {
+            border-left: none;
+            padding-left: 0;
+            border-top: 1px solid #e5e5e7;
+            padding-top: 16px;
+        }
+    }
+    button.swatch {
+        padding: 6px 10px;
+        font-size: 12px;
+        color: #1c1c1e;
+        border: 1px solid #ddd;
+        background: #fff;
+    }
+    button.swatch:hover { opacity: 1; border-color: #8aa8ff; }
+
+    /* 아바타 이미지 일괄 교체 (roll20.html과 동일) */
+    #r20App .icon-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+    }
+    #r20App .icon-empty {
+        grid-column: 1 / -1;
+        padding: 20px;
+        text-align: center;
+        color: #8e8e93;
+        font-size: 12px;
+        border: 1px dashed #d1d1d6;
+        border-radius: 8px;
+    }
+    #r20App .icon-card {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        padding: 8px;
+        border: 1px solid #e5e5e7;
+        border-radius: 10px;
+        background: #fafafa;
+    }
+    #r20App .icon-card img {
+        flex: 0 0 auto;
+        width: 40px;
+        height: 40px;
+        border-radius: 6px;
+        object-fit: cover;
+        border: 1px solid #ddd;
+        background: #fff;
+    }
+    #r20App .icon-card-info { flex: 1; min-width: 0; }
+    #r20App .icon-card-name {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    #r20App .icon-card-meta {
+        display: block;
+        font-size: 10px;
+        color: #8e8e93;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-bottom: 5px;
+    }
+    #r20App .icon-card-info input[type="text"] {
+        width: 100%;
+        padding: 5px 6px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 11px;
+    }
+
+    /* 미리보기 */
+    .stat-line {
+        font-size: 12px;
+        color: #636366;
+        margin: 0 0 10px;
+    }
+    .preview-scroll {
+        max-height: 60vh;
+        overflow-y: auto;
+        border: 1px solid #e5e5e7;
+        border-radius: 8px;
+        background: #ffffff;
+    }
+    #preview { min-height: 300px; padding: 0; background: #fff; }
+
+    /* 미리보기 전용 선택 표시 (복사되는 HTML에는 포함되지 않음) */
+    #preview .message { position: relative; cursor: pointer; transition: outline-color .15s ease; }
+    #preview .message.editor-selected { outline: 2px solid #2563eb; outline-offset: -2px; }
+
+    /* 미리보기에서 직접 수정 가능한 텍스트 (roll20.html과 동일) */
+    #preview .r20-editable {
+        cursor: text;
+        outline: none;
+        border-radius: 3px;
+    }
+    #preview .r20-editable:hover {
+        box-shadow: inset 0 0 0 1px rgba(37, 99, 235, .25);
+    }
+    #preview .r20-editable:focus {
+        box-shadow: inset 0 0 0 1px #2563eb;
+        background: rgba(255,255,255,.55);
+    }
+
+    /* =========================================================
+       편집 미리보기 전용 Roll20 채팅 스타일 (roll20_CSS.txt의 .textchatcontainer 규칙)
+       - 모든 선택자를 #preview 안으로 한정 → 페이지의 다른 곳, 복사되는 HTML,
+         티스토리 게시물에는 영향 없음
+       - 타임스탬프는 Roll20의 "타임스탬프 표시(withtimestamps)" 상태로 보여줌
+       ========================================================= */
+    #preview .chatlogmessage { padding-top: 10px; }
+    #preview a[href^="!"],
+    #preview a[href^="~"] {
+        background-color: rgb(206, 15, 105);
+        padding: 5px;
+        color: white;
+        display: inline-block;
+        border: 1px solid white;
+    }
+    #preview a[href^="!"]:hover,
+    #preview a[href^="~"]:hover { text-decoration: none; cursor: pointer; }
+    #preview .content { line-height: 1.25em; font-size: 1.05em; word-wrap: break-word; }
+    #preview .tstamp {
+        font-size: 0.8em;
+        color: #666;
+        display: block;
+        padding: 0;
+        margin: -4px 0px 2px 0px;
+        position: relative;
+        left: -5px;
+        line-height: 1em;
+    }
+    #preview .by { font-weight: bold; position: relative; left: -5px; }
+    #preview .message {
+        padding-left: 45px;
+        padding-right: 16px;
+        padding-bottom: 7px;
+        background-color: #f1f1f1;
+        position: relative;
+    }
+    #preview .news { position: relative; padding: initial; }
+    #preview .message.rollresult.hidden3d { display: none; }
+    #preview .message.hidden3d .inlinerollresult { color: rgba(255, 255, 255, 0); border: none !important; }
+    #preview .avatar { position: absolute; top: 4px; left: 5px; width: 28px; }
+    #preview .avatar img { max-width: 28px; max-height: 28px; }
+    #preview .rollresult .avatar { top: 10px; }
+    #preview .inlinerollresult {
+        background-color: #fef68e;
+        border: 2px solid #fef68e;
+        padding: 0px 3px 0px 3px;
+        font-weight: bold;
+        cursor: help;
+        font-size: 1.1em;
+    }
+    #preview .inlinerollresult.fullcrit { border: 2px solid #3fb315; }
+    #preview .inlinerollresult.fullfail { border: 2px solid #b31515; }
+    #preview .inlinerollresult.importantroll { border: 2px solid #4a57ed; }
+    #preview .formula .inlinerollresult { font-size: inherit; }
+    #preview .message .spacer {
+        background-color: #e1e1e1;
+        height: 2px;
+        margin-bottom: 7px;
+        margin-left: -45px;
+        margin-right: -12px;
+    }
+    #preview .message.desc { padding-left: 15px; }
+    #preview .message.desc .spacer { margin-left: -15px; }
+    #preview .message.you { background-color: #d3e5f5; }
+    #preview .message.you .spacer { background-color: #b1d9fa; }
+    #preview .formula,
+    #preview .rolled {
+        display: inline;
+        padding: 4px;
+        background: white;
+        border-radius: 3px;
+        border: 1px solid #d1d1d1;
+        font-size: 1.1em;
+        line-height: 2em;
+        word-wrap: break-word;
+    }
+    #preview .formula .parsegroup,
+    #preview .formula .parsegroup .parsegroupitem,
+    #preview .dicegrouping { display: inline; }
+    #preview .formattedformula { display: block; float: left; padding: 0px 4px 0px 4px; margin: 5px 0px 5px 0px; }
+    #preview .diceroll { display: inline-block; font-size: 1.2em; }
+    #preview .diceroll .dicon { display: inline-block; min-width: 30px; text-align: center; position: relative; }
+    #preview .diceroll .didroll {
+        text-shadow: -1px -1px 1px #ffffff, 1px -1px 1px #ffffff, -1px 1px 1px #ffffff, 1px 1px 1px #ffffff;
+        z-index: 2;
+        position: relative;
+        color: black;
+        height: auto;
+        min-height: 29px;
+        margin-top: -3px;
+        top: 0px;
+        text-align: center;
+    }
+    #preview .diceroll .didroll img { max-width: 30px; max-height: 30px; vertical-align: middle; }
+    #preview .diceroll .backing { display: none; }
+    #preview .diceroll.critsuccess .didroll { color: #247305; font-weight: bold; }
+    #preview .diceroll.critfail .didroll { color: #730505; font-weight: bold; }
+    #preview .diceroll.dropped,
+    #preview .parsegroup .parsegroupitem.dropped .diceroll { opacity: 0.4; }
+    #preview .rolled { font-weight: bold; color: black; font-size: 1.4em; }
+    #preview .basicdiceroll { font-size: 1.15em; }
+    #preview .basicdiceroll.critsuccess { color: #00ff00; }
+    #preview .basicdiceroll.critfail { color: #ff4d4d; font-weight: bold; }
+    #preview .basicdiceroll.dropped { color: #888888; }
+    #preview .error { background: #ffd2ad; border-radius: 3px; border: 1px solid #d1d1d1; }
+    #preview .emote {
+        font-style: italic;
+        font-weight: bold;
+        text-align: center;
+        color: #653e10;
+        background-color: #f5e4d3;
+    }
+    #preview .emote .spacer { background-color: #f0c392; }
+    #preview .desc { font-style: italic; font-weight: bold; text-align: center; }
+    #preview .message.private { background-color: #f2f5d3; }
+    #preview .message.private .spacer { background-color: #f0f092; }
+    #preview .flyout { position: absolute; cursor: pointer; height: 24px; width: 2px; right: 10px; top: 0px; }
+    #preview .sheet-rolltemplate-default table { width: 100%; background-color: white; border: 1px solid rgba(112, 32, 130, 1); }
+    #preview .sheet-rolltemplate-default caption {
+        background-color: rgba(112, 32, 130, 1);
+        color: white;
+        font-family: "Helvetica Neue", Helvetica, sans-serif;
+        font-weight: 300;
+        font-size: 1.1em;
+        padding: 5px;
+    }
+    #preview .sheet-rolltemplate-default td { padding: 5px; line-height: 1.4em; vertical-align: top; }
+    #preview .sheet-rolltemplate-default td:first-child { font-weight: bold; text-align: right; min-width: 50px; padding-right: 10px; }
+    #preview .sheet-rolltemplate-default tr:nth-child(even) { background-color: #eee; }
+
+    #toast {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: 10000;
+        background: #1c1c1e;
+        color: #fff;
+        padding: 9px 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        display: none;
+        box-shadow: 0 4px 14px rgba(0,0,0,.15);
+    }
+
+    @media (max-width: 900px) {
+        html, body { height: auto; overflow: auto; }
+        .app-layout { flex-direction: column; height: auto; }
+        .left-col, .right-col {
+            flex: none;
+            width: 100%;
+            height: auto;
+            overflow: visible;
+            border-right: none;
+            border-bottom: 1px solid #ddd;
+        }
+        .raw-panel, .raw-panel-inner { flex: none; }
+        #r20Input { min-height: 280px; resize: vertical; }
+    }
+</style>
+
+<!--
+Tistory output CSS is intentionally scoped to .textchatcontainer so it does not
+fight with the blog's global theme. The supplied CSS starts with these same
+Roll20/Tistory rules, including hidden-message removal and typography.
+이 블록은 티스토리에 게재될 때 사용하는 스타일이므로 절대 수정하지 않습니다.
+-->
+<style id="tistory-output-css">
+.textchatcontainer *{font-family:"Noto Sans KR",-apple-system,Pretendard,BlinkMacSystemFont,system-ui,ui-sans-serif,Roboto,"Helvetica Neue","Segoe UI","Apple SD Gothic Neo","Malgun Gothic","Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol",sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;font-size:13.65px;max-width:none}
+.textchatcontainer .hidden-message{display:none}
+.textchatcontainer a:hover,.textchatcontainer a:focus{text-decoration:none}
+.textchatcontainer img{max-width:100%}
+.textchatcontainer table{width:100%!important;border-spacing:0;border-collapse:collapse;padding:0}
+.textchatcontainer td{color:#000!important}
+.textchatcontainer code{padding:2px 4px;font-size:90%!important;color:#c7254e;background-color:#f9f2f4;border-radius:4px}
+.textchatcontainer .message.emote{padding-left:15px!important}
+.textchatcontainer .message.emote.is_o{padding-left:45px!important}
+.textchatcontainer .message.emote .spacer{margin-left:-15px!important}
+.textchatcontainer .message.emote.is_o .spacer{margin-left:-45px!important}
+.textchatcontainer .message{display:block;position:relative;min-height:1px;}
+.textchatcontainer .message .message-content{display:block;}
+.textchatcontainer .message .avatar{display:block;}
+.textchatcontainer .message .avatar img{display:block;}
+</style>
 </head>
 
 <body>
+
+<nav class="tab-bar" role="tablist" aria-label="백업 도구">
+    <button type="button" class="tab-btn" role="tab" id="tabBtnChat" aria-controls="chatApp" aria-selected="true" data-tab="chatApp">Chat Backup</button>
+    <button type="button" class="tab-btn" role="tab" id="tabBtnR20" aria-controls="r20App" aria-selected="false" data-tab="r20App">Roll20 Backup</button>
+</nav>
+
+<div class="tab-panels">
+
+<!-- =========================================================
+     탭 1: Chat Backup
+     ========================================================= -->
+<section id="chatApp" class="tab-panel" role="tabpanel" aria-labelledby="tabBtnChat">
+
 
     <!-- 오류 발생 시 여기에 내용이 표시됩니다 -->
     <div id="errorBanner" class="error-banner" style="display:none;"></div>
@@ -799,15 +1379,108 @@
 
     </div>
 
-    <!-- ============================================================
-         사용자 설정 (기본값)
-         이름 추가/수정은 아래 목록만 고치면 됩니다.
-         (예전엔 userConfig.js라는 별도 파일이었지만,
-          로컬 PC에서 index.html을 직접 열었을 때 브라우저가
-          다른 로컬 파일 불러오기를 보안상 막아버려서
-          이 파일 안으로 직접 옮겼습니다)
-         ============================================================ -->
-    <script>
+    
+</section>
+
+<!-- =========================================================
+     탭 2: Roll20 Backup
+     ========================================================= -->
+<section id="r20App" class="tab-panel" role="tabpanel" aria-labelledby="tabBtnR20" hidden>
+
+
+<div class="app-layout">
+
+    <!-- 좌측: 원본 입력 -->
+    <div class="left-col">
+        <div class="left-col-toolbar">
+            <label class="file-input-label" for="r20FileInput">TXT / HTML 파일 불러오기</label>
+            <input id="r20FileInput" type="file" accept=".txt,.html,.htm,text/plain,text/html">
+            <button id="copyBtn" type="button">티스토리 HTML 복사</button>
+        </div>
+
+        <span class="toolbar-hint">붙여넣거나 파일을 불러오면 오른쪽에 바로 표시됩니다.</span>
+
+        <div class="raw-panel">
+            <div class="raw-panel-inner">
+                <p class="raw-panel-title">Roll20 HTML 입력</p>
+                <p class="raw-panel-help">F12 → Textchatcontainer 내부 HTML을 그대로 붙여넣으세요. 붙여넣는 즉시 “This message has been hidden.” 메시지 삭제, 타임스탬프 삭제, <code>message general you</code> → <code>message general</code> 정규화, 아바타 자동 추출이 수행됩니다.</p>
+                <textarea id="r20Input" spellcheck="false" wrap="off" placeholder="<div class=&quot;textchatcontainer&quot; id=&quot;textchat&quot;>
+  <div class=&quot;content&quot;>
+    <div class=&quot;message general&quot; ...>...</div>
+    ...
+  </div>
+</div>"></textarea>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 우측: 편집 도구 + 미리보기 -->
+    <div class="right-col">
+
+        <!-- 아바타 이미지 교체 + 선택 메시지 편집 (통합) -->
+        <div class="card" id="editCard">
+            <div class="card-header" data-toggle="editCard">
+                <p class="card-title">아바타 · 메시지 편집</p>
+                <span class="card-toggle">▾</span>
+            </div>
+            <div class="card-body">
+                <div class="edit-columns">
+
+                    <!-- 왼쪽: 아바타 이미지 교체 -->
+                    <div class="edit-col">
+                        <p class="edit-col-title">아바타 이미지 일괄 교체</p>
+                        <p class="card-help">원본에서 발견된 아바타 목록입니다. 새 이미지 주소를 입력하면 그 닉네임이 쓴 모든 메시지에 한꺼번에 적용됩니다. 입력칸을 비우면 원래 이미지로 돌아갑니다.</p>
+                        <div id="avatarList" class="icon-list"></div>
+                    </div>
+
+                    <!-- 오른쪽: 선택 메시지 편집 -->
+                    <div class="edit-col">
+                        <p class="edit-col-title">선택 메시지 편집</p>
+                        <p class="card-help">미리보기에서 메시지를 클릭해 선택하세요. Shift+클릭으로 여러 개를 선택할 수 있습니다.</p>
+                        <p class="sel-status" id="selStatus">선택된 메시지가 없습니다.</p>
+                        <div class="tool-row" id="colorPresets">
+                            <button type="button" class="swatch" data-color="#cfe2f3" style="background:#cfe2f3">general you (하늘색)</button>
+                            <button type="button" class="swatch" data-color="#fff2cc" style="background:#fff2cc">Desc</button>
+                            <button type="button" class="swatch" data-color="#f4cccc" style="background:#f4cccc">강조</button>
+                            <button type="button" class="swatch" data-color="">배경 지우기</button>
+                        </div>
+                        <div class="sel-tools">
+                            <button id="deleteSelected" type="button" class="danger" disabled>선택 메시지 삭제</button>
+                            <button id="undoDelete" type="button" class="ghost" disabled>삭제 되돌리기</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <!-- 미리보기 -->
+        <div class="card">
+            <p class="card-title" style="margin-bottom:10px;">편집 미리보기</p>
+            <p class="card-help" style="margin:0 0 10px;">미리보기의 이름·본문을 직접 클릭해 수정할 수 있습니다. 수정 내용은 HTML 복사에 그대로 반영됩니다.</p>
+            <p class="stat-line" id="statLine">원본을 입력하면 이곳에 결과가 표시됩니다.</p>
+            <div class="preview-scroll">
+                <div id="preview" class="textchatcontainer"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="toast"></div>
+
+
+</section>
+
+</div>
+
+<!-- ============================================================
+     [Chat Backup] 사용자 설정 (기본값)
+     이름 추가/수정은 아래 목록만 고치면 됩니다.
+     ============================================================ -->
+<script>
         const userConfig = {
 
             "Popo": {
@@ -825,8 +1498,10 @@
         };
     </script>
 
+<!-- [Chat Backup] 스크립트 -->
+<script>
+(function () {
 
-    <script>
 
         const fileInput = document.getElementById("fileInput");
         const chat = document.getElementById("chat");
@@ -2139,7 +2814,471 @@
                 });
         });
 
-    </script>
+    
+})();
+</script>
+
+<!-- [Roll20 Backup] 스크립트 -->
+<script>
+(function () {
+"use strict";
+
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+const input   = $("#r20Input");
+const preview = $("#preview");
+
+/* 선택된 메시지들 (배경색 지정용) */
+let selected = new Set();
+
+/* 아바타 교체 맵 { 원본주소: 새주소 } — roll20.html과 동일 */
+let avatarMap = {};
+/* 메시지 요소 → 원본 아바타 주소 */
+let origAvatar = new Map();
+let lastRemoved = 0;
+let lastDeleted = 0;
+
+
+function toast(t){
+  const x = $("#toast");
+  x.textContent = t;
+  x.style.display = "block";
+  clearTimeout(window._toast);
+  window._toast = setTimeout(() => x.style.display = "none", 1600);
+}
+
+function messages(root){ return [...root.querySelectorAll(".message")]; }
+
+function getName(m){
+  const selectors = [".by", ".speakingas", ".message-content .name", ".name"];
+  for (const s of selectors){
+    const e = m.querySelector(s);
+    if (e && e.textContent.trim()) return e.textContent.trim().replace(/\s+/g, " ").replace(/:\s*$/, "");
+  }
+  return "";
+}
+
+/* 원본 아바타 주소: .avatar img의 src (없으면 .avatar의 background-image) */
+function getAvatar(m){
+  const img = m.querySelector(".avatar img");
+  if (img) return img.getAttribute("src") || "";
+  const a = m.querySelector(".avatar");
+  if (!a) return "";
+  const match = (a.getAttribute("style") || "").match(/url\((['"]?)(.*?)\1\)/i);
+  return match ? match[2] : "";
+}
+
+function setAvatar(m, url){
+  const img = m.querySelector(".avatar img");
+  if (img){ img.setAttribute("src", url); return; }
+  const a = m.querySelector(".avatar");
+  if (a) a.style.backgroundImage = 'url("' + url.replace(/"/g, '\\"') + '")';
+}
+
+
+/* ------------------------------------------------------------
+ * 원본 HTML 파싱 + 자동 정리
+ * ------------------------------------------------------------ */
+function parseSource(html){
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const root = doc.querySelector(".textchatcontainer") || doc.body;
+  root.querySelectorAll("script").forEach(e => e.remove());
+  return root;
+}
+
+/* 숨긴 메시지 삭제 + "you" 클래스 정규화 */
+function clean(root){
+  let removed = 0;
+  messages(root).forEach(m => {
+    if ((m.textContent || "").includes("This message has been hidden.")) { m.remove(); removed++; }
+  });
+  root.querySelectorAll(".message.general.you").forEach(m => m.classList.remove("you"));
+  root.querySelectorAll(".message.general").forEach(m => {
+    [...m.classList].filter(c => /^general[-_]?you$/i.test(c)).forEach(c => m.classList.remove(c));
+  });
+  /* 타임스탬프 자동 삭제 */
+  root.querySelectorAll(".tstamp").forEach(t => t.remove());
+  return removed;
+}
+
+
+/* ------------------------------------------------------------
+ * 미리보기 직접 편집 준비 (roll20.html 방식)
+ *  - 이름(.by)      → data-editable="name"
+ *  - 시간(.tstamp)  → data-editable="time"
+ *  - 본문           → <span data-editable="body">로 감싸 편집
+ * 복사 시에는 편집용 속성/래퍼를 모두 제거해 원래 구조로 되돌린다.
+ * ------------------------------------------------------------ */
+const NON_BODY = ".spacer, .avatar, .tstamp, .by, .flyout";
+
+function makeEditable(el, role){
+  el.classList.add("r20-editable");
+  el.setAttribute("contenteditable", "true");
+  el.setAttribute("spellcheck", "false");
+  el.dataset.editable = role;
+}
+
+function prepareEditing(root){
+  messages(root).forEach(m => {
+    m.querySelectorAll(":scope > .by").forEach(e => makeEditable(e, "name"));
+    m.querySelectorAll(":scope > .tstamp").forEach(e => makeEditable(e, "time"));
+
+    const bodyNodes = [...m.childNodes].filter(n =>
+      !(n.nodeType === 1 && n.matches(NON_BODY)) &&
+      (n.nodeType === 1 || (n.nodeType === 3 && n.textContent.trim()))
+    );
+    if (!bodyNodes.length) return;
+
+    const span = document.createElement("span");
+    makeEditable(span, "body");
+    m.insertBefore(span, bodyNodes[0]);
+    bodyNodes.forEach(n => span.appendChild(n));
+  });
+}
+
+
+/* ------------------------------------------------------------
+ * 아바타 이미지 일괄 교체 (roll20.html 로직과 동일)
+ * ------------------------------------------------------------ */
+function applyAvatars(){
+  origAvatar.forEach((src, m) => setAvatar(m, avatarMap[src] || src));
+}
+
+function applySavedAvatar(src, value){
+  const v = value.trim();
+  if (v) { avatarMap[src] = v; }
+  else { delete avatarMap[src]; }
+  applyAvatars();
+}
+
+function collectAvatars(){
+  const data = {};
+  origAvatar.forEach((src, m) => {
+    if (!src) return;
+    if (!data[src]) data[src] = { count: 0, nicknames: {} };
+    data[src].count++;
+    const n = m.querySelector(".by") ? getName(m) : "";
+    if (n) data[src].nicknames[n] = true;
+  });
+  return Object.keys(data).map(src => ({
+    src: src,
+    count: data[src].count,
+    nicknames: Object.keys(data[src].nicknames)
+  })).sort((a, b) => b.count - a.count);
+}
+
+function buildAvatarRows(avatars){
+  const list = $("#avatarList");
+  list.innerHTML = "";
+
+  if (!avatars.length){
+    const empty = document.createElement("div");
+    empty.className = "icon-empty";
+    empty.textContent = messages(preview).length ? "아바타를 찾지 못했습니다." : "원본을 먼저 불러오세요.";
+    list.appendChild(empty);
+    return;
+  }
+
+  avatars.forEach(info => {
+    const card = document.createElement("div");
+    card.className = "icon-card";
+
+    const img = document.createElement("img");
+    img.src = avatarMap[info.src] || info.src;
+    img.alt = "";
+    img.onerror = function(){ this.style.opacity = "0.3"; };
+
+    const meta = document.createElement("div");
+    meta.className = "icon-card-info";
+
+    const nameEl = document.createElement("span");
+    nameEl.className = "icon-card-name";
+    nameEl.textContent = info.nicknames.length ? info.nicknames.join(", ") : "(이름 없음)";
+    nameEl.title = nameEl.textContent;
+
+    const countEl = document.createElement("span");
+    countEl.className = "icon-card-meta";
+    countEl.textContent = info.count + "개 메시지";
+    countEl.title = info.src;
+
+    const inp = document.createElement("input");
+    inp.type = "text";
+    inp.placeholder = "새 이미지 주소를 입력하세요";
+    inp.value = avatarMap[info.src] || "";
+
+    inp.addEventListener("change", function(){
+      img.src = this.value.trim() || info.src;
+      img.style.opacity = "1";
+      applySavedAvatar(info.src, this.value);
+    });
+
+    meta.appendChild(nameEl);
+    meta.appendChild(countEl);
+    meta.appendChild(inp);
+    card.appendChild(img);
+    card.appendChild(meta);
+    list.appendChild(card);
+  });
+}
+
+
+/* ------------------------------------------------------------
+ * 선택 메시지 배경색
+ * ------------------------------------------------------------ */
+function refreshSelection(){
+  messages(preview).forEach(m => m.classList.toggle("editor-selected", selected.has(m)));
+  const n = selected.size;
+  $("#deleteSelected").disabled = !n;
+  if (!n) { $("#selStatus").textContent = "선택된 메시지가 없습니다."; return; }
+  if (n === 1) { $("#selStatus").textContent = "선택됨: " + (getName([...selected][0]) || "(닉네임 없음)"); return; }
+  $("#selStatus").textContent = "선택됨: 메시지 " + n + "개";
+}
+
+preview.addEventListener("click", e => {
+  const m = e.target.closest ? e.target.closest(".message") : null;
+  if (!m || !preview.contains(m)) return;
+  if (e.shiftKey) {
+    selected.has(m) ? selected.delete(m) : selected.add(m);
+  } else {
+    selected.clear();
+    selected.add(m);
+  }
+  refreshSelection();
+});
+
+function setBg(c){
+  if (!selected.size) { toast("먼저 미리보기에서 메시지를 클릭해 선택하세요."); return; }
+  selected.forEach(m => c ? (m.style.backgroundColor = c) : m.style.removeProperty("background-color"));
+  refreshSelection();
+}
+
+$$("#colorPresets button").forEach(b => {
+  b.onclick = () => {
+    const c = b.dataset.color;
+    setBg(c);
+  };
+});
+
+
+/* 선택 메시지 삭제: 미리보기(=복사 결과)에서 완전히 제거
+ * 삭제할 때 원래 자리(부모/다음 요소)를 기록해 두었다가
+ * "삭제 되돌리기"로 가장 최근 삭제분부터 원래 자리에 복원한다. */
+let deleteHistory = [];
+
+function refreshUndo(){
+  const btn = $("#undoDelete");
+  const last = deleteHistory[deleteHistory.length - 1];
+  btn.disabled = !last;
+  btn.textContent = last ? "삭제 되돌리기 (" + last.length + "개)" : "삭제 되돌리기";
+}
+
+$("#deleteSelected").onclick = () => {
+  if (!selected.size) { toast("먼저 미리보기에서 메시지를 클릭해 선택하세요."); return; }
+  /* 문서 순서대로 정렬해 원래 위치를 기록 */
+  const list = messages(preview).filter(m => selected.has(m));
+  const batch = list.map(m => ({ el: m, parent: m.parentNode, next: m.nextSibling, avatar: origAvatar.get(m) }));
+  batch.forEach(item => { origAvatar.delete(item.el); item.el.remove(); });
+  deleteHistory.push(batch);
+  selected.clear();
+  lastDeleted += batch.length;
+  buildAvatarRows(collectAvatars());
+  refreshSelection();
+  refreshUndo();
+  updateStat();
+  toast("메시지 " + batch.length + "개를 삭제했습니다.");
+};
+
+$("#undoDelete").onclick = () => {
+  const batch = deleteHistory.pop();
+  if (!batch) return;
+  /* 뒤에서부터 넣어야 연속으로 삭제된 메시지의 순서가 유지된다 */
+  for (let i = batch.length - 1; i >= 0; i--) {
+    const item = batch[i];
+    const next = item.next && item.next.parentNode === item.parent ? item.next : null;
+    item.parent.insertBefore(item.el, next);
+    if (item.avatar) origAvatar.set(item.el, item.avatar);
+  }
+  applyAvatars();
+  selected = new Set(batch.map(item => item.el));
+  lastDeleted -= batch.length;
+  buildAvatarRows(collectAvatars());
+  refreshSelection();
+  refreshUndo();
+  updateStat();
+  toast("메시지 " + batch.length + "개를 되돌렸습니다.");
+};
+
+
+/* ------------------------------------------------------------
+ * 입력 처리 (붙여넣기 / 파일 불러오기 즉시 반영)
+ * ------------------------------------------------------------ */
+function updateStat(){
+  const n = messages(preview).length;
+  $("#statLine").textContent = n
+    ? "총 " + n + "개 메시지" +
+      (lastRemoved ? " (숨김 메시지 " + lastRemoved + "개 삭제됨)" : "") +
+      (lastDeleted ? " (직접 삭제 " + lastDeleted + "개)" : "")
+    : "원본을 입력하면 이곳에 결과가 표시됩니다.";
+}
+
+function clearAll(){
+  preview.innerHTML = "";
+  selected.clear();
+  origAvatar = new Map();
+  avatarMap = {};
+  lastRemoved = 0;
+  lastDeleted = 0;
+  deleteHistory = [];
+  refreshUndo();
+  buildAvatarRows([]);
+  refreshSelection();
+  updateStat();
+}
+
+function loadSource(html){
+  try {
+    const root = parseSource(html);
+    lastRemoved = clean(root);
+    lastDeleted = 0;
+    deleteHistory = [];
+    refreshUndo();
+
+    preview.innerHTML = "";
+    [...root.childNodes].forEach(n => preview.appendChild(document.importNode(n, true)));
+
+    /* 새 원본을 불러오면 이전 선택/아바타 교체는 초기화 */
+    selected.clear();
+    avatarMap = {};
+    origAvatar = new Map();
+    messages(preview).forEach(m => {
+      const src = getAvatar(m);
+      if (src) origAvatar.set(m, src);
+    });
+
+    prepareEditing(preview);
+    buildAvatarRows(collectAvatars());
+    refreshSelection();
+    updateStat();
+  } catch (err) {
+    console.error(err);
+    toast("변환 중 오류: " + (err && err.message ? err.message : err));
+  }
+}
+
+input.addEventListener("input", function(){
+  if (!this.value.trim()) { clearAll(); return; }
+  loadSource(this.value);
+});
+
+$("#r20FileInput").addEventListener("change", function(){
+  const file = this.files[0];
+  if (!file) return;
+  file.text().then(text => {
+    input.value = text;
+    loadSource(text);
+    this.value = "";
+  }).catch(() => toast("파일을 읽지 못했습니다."));
+});
+
+
+/* ------------------------------------------------------------
+ * 복사용 HTML 생성
+ * contenteditable / data-* / 선택 강조 / 본문 래퍼는 미리보기 전용이므로
+ * 최종 복사 HTML에서는 제거한다.
+ * ------------------------------------------------------------ */
+function getExportHtml(){
+  if (!messages(preview).length) return "";
+  const clone = preview.cloneNode(true);
+  clone.removeAttribute("id");
+
+  clone.querySelectorAll('[data-editable="body"]').forEach(span => {
+    span.replaceWith(...span.childNodes);
+  });
+  clone.querySelectorAll("[data-editable]").forEach(el => {
+    el.removeAttribute("contenteditable");
+    el.removeAttribute("spellcheck");
+    el.removeAttribute("data-editable");
+    el.classList.remove("r20-editable");
+    if (!el.getAttribute("class")) el.removeAttribute("class");
+  });
+  clone.querySelectorAll(".editor-selected").forEach(el => el.classList.remove("editor-selected"));
+  clone.querySelectorAll('[style=""]').forEach(el => el.removeAttribute("style"));
+  clone.querySelectorAll("script").forEach(e => e.remove());
+
+  return clone.outerHTML;
+}
+
+function copyTextToClipboard(text){
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(text);
+  }
+  return new Promise((resolve, reject) => {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); resolve(); }
+    catch (e) { reject(e); }
+    finally { document.body.removeChild(ta); }
+  });
+}
+
+$("#copyBtn").addEventListener("click", () => {
+  const html = getExportHtml();
+  if (!html) { toast("먼저 Roll20 HTML을 붙여넣어 주세요."); return; }
+  copyTextToClipboard(html).then(() => {
+    const b = $("#copyBtn"), orig = b.textContent;
+    b.textContent = "복사됨!";
+    setTimeout(() => b.textContent = orig, 1500);
+  }).catch(() => toast("복사에 실패했습니다. 브라우저 권한을 확인해주세요."));
+});
+
+
+/* 카드 접기/펼치기 */
+$$(".card-header[data-toggle]").forEach(h => {
+  h.addEventListener("click", function(){ document.getElementById(this.dataset.toggle).classList.toggle("collapsed"); });
+});
+
+buildAvatarRows([]);
+refreshSelection();
+
+})();
+</script>
+
+<!-- 탭 전환 -->
+<script>
+(function () {
+    var STORAGE_KEY = "backupToolActiveTab";
+    var buttons = Array.prototype.slice.call(document.querySelectorAll(".tab-btn"));
+
+    function activate(id, save) {
+        buttons.forEach(function (b) {
+            var on = b.dataset.tab === id;
+            b.setAttribute("aria-selected", on ? "true" : "false");
+            b.tabIndex = on ? 0 : -1;
+            document.getElementById(b.dataset.tab).hidden = !on;
+        });
+        if (save) { try { localStorage.setItem(STORAGE_KEY, id); } catch (e) {} }
+    }
+
+    buttons.forEach(function (b, i) {
+        b.addEventListener("click", function () { activate(b.dataset.tab, true); });
+        b.addEventListener("keydown", function (e) {
+            if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+            var next = buttons[(i + (e.key === "ArrowRight" ? 1 : buttons.length - 1)) % buttons.length];
+            next.focus();
+            activate(next.dataset.tab, true);
+        });
+    });
+
+    var saved = null;
+    try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) {}
+    activate(saved && document.getElementById(saved) ? saved : "chatApp", false);
+})();
+</script>
 
 </body>
 </html>
