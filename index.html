@@ -767,6 +767,15 @@
         flex-direction: column;
     }
 
+    /* Roll20 HTML 입력 + 편집 미리보기가 함께 있는 좌측 구역은 더 넓게 사용
+       (좌/우 컬럼이 세로로 쌓이는 900px 이하 모바일 레이아웃에는 영향 없음) */
+    @media (min-width: 901px) {
+        #r20App .left-col {
+            flex: 0 0 640px;
+            width: 640px;
+        }
+    }
+
     .left-col-toolbar {
         display: flex;
         align-items: center;
@@ -801,7 +810,6 @@
         font-size: 14px;
     }
     .file-input-label:hover { background: #e5e5ea; }
-    #r20FileInput { display: none; }
 
     button {
         border: 0;
@@ -823,12 +831,12 @@
         margin: 0 0 10px;
     }
 
-    /* 좌측 입력창 */
+    /* 좌측 입력창 (높이를 최소화하고, 나머지 공간은 아래 편집 카드가 사용) */
     .raw-panel {
         display: flex;
         flex-direction: column;
         min-height: 0;
-        flex: 1;
+        flex: 0 0 auto;
     }
     .raw-panel-inner {
         background: #fff;
@@ -838,7 +846,6 @@
         display: flex;
         flex-direction: column;
         min-height: 0;
-        flex: 1;
     }
     .raw-panel-title {
         margin: 0 0 6px;
@@ -859,12 +866,12 @@
     }
     #r20Input {
         width: 100%;
-        flex: 1;
-        min-height: 0;
+        height: 120px;
+        flex: none;
         padding: 12px;
         border: 1px solid #ddd;
         border-radius: 8px;
-        resize: none;
+        resize: vertical;
         outline: none;
         background: #fafafa;
         color: #1c1c1e;
@@ -919,6 +926,28 @@
         margin-bottom: 10px;
     }
 
+    /* 텍스트 일괄 바꾸기 */
+    .replace-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    .replace-row input[type="text"] {
+        flex: 1 1 200px;
+        min-width: 140px;
+        padding: 8px 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 13px;
+    }
+    .replace-row input[type="text"]:focus {
+        outline: none;
+        border-color: #8aa8ff;
+        box-shadow: 0 0 0 2px #eef4ff;
+    }
+
     /* 선택 메시지 배경색 */
     .sel-status {
         font-size: 12px;
@@ -961,6 +990,9 @@
             padding-top: 16px;
         }
     }
+
+    /* 아바타 · 메시지 편집 카드는 이제 폭이 넉넉한 우측 컬럼에 있으므로
+       기본 반응형 규칙(1100px 이하에서 세로로 쌓임)을 그대로 사용한다. */
     button.swatch {
         padding: 6px 10px;
         font-size: 12px;
@@ -973,7 +1005,7 @@
     /* 아바타 이미지 일괄 교체 (roll20.html과 동일) */
     #r20App .icon-list {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
         gap: 10px;
     }
     #r20App .icon-empty {
@@ -993,6 +1025,7 @@
         border: 1px solid #e5e5e7;
         border-radius: 10px;
         background: #fafafa;
+        position: relative;
     }
     #r20App .icon-card img {
         flex: 0 0 auto;
@@ -1029,6 +1062,96 @@
         font-size: 11px;
     }
 
+    /* 아바타 카드: 메시지 선택 줄 + 주소 입력/삭제 줄 */
+    #r20App .icon-card-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        margin-bottom: 5px;
+    }
+    #r20App .icon-card-line .icon-card-meta {
+        flex: 1 1 auto;
+        min-width: 0;
+        margin-bottom: 0;
+    }
+    #r20App .icon-card-input-row {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    #r20App .icon-card-input-row input[type="text"] {
+        flex: 1 1 auto;
+        width: auto;
+        min-width: 0;
+    }
+    #r20App button.mini {
+        flex: 0 0 auto;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        line-height: 1.4;
+        white-space: nowrap;
+    }
+    #r20App button.mini.ghost { border: 1px solid #ddd; }
+
+    /* 편집이 필요 없는 아바타를 목록에서 숨기는 × 버튼 (카드에 마우스를 올리면 표시) */
+    #r20App button.icon-card-hide {
+        position: absolute;
+        top: -7px;
+        right: -7px;
+        z-index: 2;
+        width: 20px;
+        height: 20px;
+        padding: 0;
+        border-radius: 50%;
+        background: #636366;
+        color: #fff;
+        font: 700 14px/20px -apple-system, "Segoe UI", sans-serif;
+        text-align: center;
+        box-shadow: 0 0 0 1px #fff;
+        opacity: 0;
+        transition: opacity .12s ease;
+    }
+    #r20App .icon-card:hover button.icon-card-hide,
+    #r20App button.icon-card-hide:focus-visible { opacity: 1; }
+    #r20App button.icon-card-hide:hover { background: #d92d20; opacity: 1; }
+    /* 마우스가 없는 기기에서는 항상 표시 */
+    @media (hover: none) {
+        #r20App button.icon-card-hide { opacity: 1; }
+    }
+
+    /* 숨긴 아바타 안내 줄 */
+    #r20App .icon-hidden-note {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: #8e8e93;
+    }
+
+    /* 인장 이미지를 삭제한 카드: 깨진 이미지 대신 빈 칸 표시 */
+    #r20App .icon-thumb-empty {
+        display: none;
+        flex: 0 0 auto;
+        width: 40px;
+        height: 40px;
+        align-items: center;
+        justify-content: center;
+        border: 1px dashed #c7c7cc;
+        border-radius: 6px;
+        background: #fff;
+        color: #8e8e93;
+        font-size: 10px;
+    }
+    #r20App .icon-card.is-removed { background: #f5f5f7; }
+    #r20App .icon-card.is-removed img,
+    #r20App .icon-card.no-image img { display: none; }
+    #r20App .icon-card.is-removed .icon-thumb-empty,
+    #r20App .icon-card.no-image .icon-thumb-empty { display: flex; }
+    #r20App .icon-card.is-removed input[type="text"] { background: #f0f0f2; color: #8e8e93; }
+
     /* 미리보기 */
     .stat-line {
         font-size: 12px;
@@ -1047,6 +1170,27 @@
     /* 미리보기 전용 선택 표시 (복사되는 HTML에는 포함되지 않음) */
     #preview .message { position: relative; cursor: pointer; transition: outline-color .15s ease; }
     #preview .message.editor-selected { outline: 2px solid #2563eb; outline-offset: -2px; }
+
+    /* 인장 이미지를 삭제한 아바타: 미리보기에서 숨김 (복사 HTML에서는 요소 자체가 제거됨) */
+    #preview [data-avatar-removed] { display: none !important; }
+
+    /* 아바타에 마우스를 올리면 오른쪽 위에 나타나는 개별 삭제 버튼 (가상 요소라 복사 HTML에는 포함되지 않음) */
+    #preview .avatar:hover::after {
+        content: "\00d7";
+        position: absolute;
+        top: -3px;
+        right: -3px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #d92d20;
+        color: #fff;
+        font: 700 13px/15px -apple-system, "Segoe UI", sans-serif;
+        text-align: center;
+        box-shadow: 0 0 0 1px #fff;
+        cursor: pointer;
+        z-index: 2;
+    }
 
     /* 미리보기에서 직접 수정 가능한 텍스트 (roll20.html과 동일) */
     #preview .r20-editable {
@@ -1204,6 +1348,37 @@
         font-size: 13px;
         display: none;
         box-shadow: 0 4px 14px rgba(0,0,0,.15);
+    }
+
+    /* 편집 미리보기가 왼쪽 컬럼(입력창 아래)을 가득 채우도록 함.
+       화면 폭이 줄어 좌/우 컬럼이 세로로 쌓이는 900px 이하 레이아웃에는 영향 없음(기존 그대로 유지). */
+    @media (min-width: 901px) {
+        #r20App .left-col {
+            min-height: 0;
+        }
+        #r20App .left-col #previewCard {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        #r20App .left-col #previewCard .preview-scroll {
+            flex: 1;
+            min-height: 0;
+            max-height: none;
+        }
+    }
+
+    /* 좌측 컬럼은 gap을 쓰지 않으므로 입력창과 미리보기 사이 간격을 직접 지정 */
+    #previewCard { margin-top: 16px; }
+
+    /* 편집 미리보기 제목 + HTML 복사 버튼(우상단) */
+    .preview-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 10px;
     }
 
     @media (max-width: 900px) {
@@ -1392,18 +1567,12 @@ Roll20/Tistory rules, including hidden-message removal and typography.
 
     <!-- 좌측: 원본 입력 -->
     <div class="left-col">
-        <div class="left-col-toolbar">
-            <label class="file-input-label" for="r20FileInput">TXT / HTML 파일 불러오기</label>
-            <input id="r20FileInput" type="file" accept=".txt,.html,.htm,text/plain,text/html">
-            <button id="copyBtn" type="button">티스토리 HTML 복사</button>
-        </div>
-
-        <span class="toolbar-hint">붙여넣거나 파일을 불러오면 오른쪽에 바로 표시됩니다.</span>
+        <span class="toolbar-hint">여기에 Roll20 HTML을 붙여넣으면 아래에 바로 표시됩니다.</span>
 
         <div class="raw-panel">
             <div class="raw-panel-inner">
                 <p class="raw-panel-title">Roll20 HTML 입력</p>
-                <p class="raw-panel-help">F12 → Textchatcontainer 내부 HTML을 그대로 붙여넣으세요. 붙여넣는 즉시 “This message has been hidden.” 메시지 삭제, 타임스탬프 삭제, <code>message general you</code> → <code>message general</code> 정규화, 아바타 자동 추출이 수행됩니다.</p>
+                <p class="raw-panel-help">F12 → Textchatcontainer 를 그대로 붙여넣으세요. 이 영역에 뜬 메시지는 원본 txt이며, HTML 복사 버튼을 눌러야 티스토리용 HTML이 복사됩니다.</p>
                 <textarea id="r20Input" spellcheck="false" wrap="off" placeholder="<div class=&quot;textchatcontainer&quot; id=&quot;textchat&quot;>
   <div class=&quot;content&quot;>
     <div class=&quot;message general&quot; ...>...</div>
@@ -1412,11 +1581,37 @@ Roll20/Tistory rules, including hidden-message removal and typography.
 </div>"></textarea>
             </div>
         </div>
+
+        <!-- 미리보기 -->
+        <div class="card" id="previewCard">
+            <div class="preview-header">
+                <p class="card-title" style="margin:0;">편집 미리보기</p>
+                <button id="copyBtn" type="button">HTML 복사</button>
+            </div>
+            <p class="card-help" style="margin:0 0 10px;">미리보기의 이름·본문을 직접 클릭해 수정할 수 있습니다. 인장에 마우스를 올리면 오른쪽 위에 나타나는 <b>×</b>를 눌러 그 메시지의 인장만 삭제할 수 있습니다. 수정 내용은 HTML 복사 시에 그대로 반영됩니다. (원본에 영향 없음) </p>
+            <p class="stat-line" id="statLine">원본을 입력하면 이곳에 결과가 표시됩니다.</p>
+            <div class="preview-scroll">
+                <div id="preview" class="textchatcontainer"></div>
+            </div>
+        </div>
     </div>
 
 
-    <!-- 우측: 편집 도구 + 미리보기 -->
+    <!-- 우측: 편집 도구 -->
     <div class="right-col">
+
+        <!-- 텍스트 일괄 바꾸기 -->
+        <div class="card" id="replaceCard">
+            <p class="card-title" style="margin-bottom:10px;">텍스트 일괄 바꾸기</p>
+            <p class="card-help" style="margin:0 0 10px;">아래 미리보기에 있는 모든 메시지에서 찾을 내용을 변경 내용으로 한 번에 바꿉니다. (원본에는 영향 없음, 복구로 되돌릴 수 있습니다)</p>
+            <div class="replace-row">
+                <input type="text" id="findText" placeholder="찾을 내용">
+                <input type="text" id="replaceText" placeholder="변경 내용">
+                <button id="applyReplace" type="button">변환</button>
+                <button id="undoReplace" type="button" class="ghost" disabled>복구</button>
+            </div>
+            <p class="sel-status" id="replaceStatus"></p>
+        </div>
 
         <!-- 아바타 이미지 교체 + 선택 메시지 편집 (통합) -->
         <div class="card" id="editCard">
@@ -1430,20 +1625,19 @@ Roll20/Tistory rules, including hidden-message removal and typography.
                     <!-- 왼쪽: 아바타 이미지 교체 -->
                     <div class="edit-col">
                         <p class="edit-col-title">아바타 이미지 일괄 교체</p>
-                        <p class="card-help">원본에서 발견된 아바타 목록입니다. 새 이미지 주소를 입력하면 그 닉네임이 쓴 모든 메시지에 한꺼번에 적용됩니다. 입력칸을 비우면 원래 이미지로 돌아갑니다.</p>
+                        <p class="card-help"><b>메시지 선택</b>을 누르면 그 아바타의 메시지가 미리보기에서 한꺼번에 선택됩니다(Shift+클릭: 기존 선택에 추가). 편집이 필요 없는 아바타는 카드에 마우스를 올리면 나타나는 <b>×</b>로 목록에서 숨길 수 있으며(메시지·인장은 그대로), 목록 아래 <b>모두 다시 보기</b>로 되돌릴 수 있습니다.</p>
                         <div id="avatarList" class="icon-list"></div>
                     </div>
 
                     <!-- 오른쪽: 선택 메시지 편집 -->
                     <div class="edit-col">
                         <p class="edit-col-title">선택 메시지 편집</p>
-                        <p class="card-help">미리보기에서 메시지를 클릭해 선택하세요. Shift+클릭으로 여러 개를 선택할 수 있습니다.</p>
+                        <p class="card-help">편집 미리보기 창에서 메시지를 클릭해 선택하세요. Shift+클릭으로 여러 개를 선택할 수 있습니다. </p>
                         <p class="sel-status" id="selStatus">선택된 메시지가 없습니다.</p>
                         <div class="tool-row" id="colorPresets">
-                            <button type="button" class="swatch" data-color="#cfe2f3" style="background:#cfe2f3">general you (하늘색)</button>
-                            <button type="button" class="swatch" data-color="#fff2cc" style="background:#fff2cc">Desc</button>
-                            <button type="button" class="swatch" data-color="#f4cccc" style="background:#f4cccc">강조</button>
-                            <button type="button" class="swatch" data-color="">배경 지우기</button>
+                            <button type="button" class="swatch" data-color="#cfe2f3" style="background:#cfe2f3"><b>general you</b></button>
+                            <button type="button" class="swatch" data-preset="emote" style="background:#f5e4d3;color:#653e10;font-style:italic;font-weight:700" title="선택한 메시지를 message emote 양식(배경색·기울임·굵게·가운데 정렬)으로 바꿉니다">emote</button>
+                            <button type="button" class="swatch" data-color="" title="배경색을 지우고, emote 양식으로 바꾼 메시지는 원래 종류로 되돌립니다">배경 지우기</button>
                         </div>
                         <div class="sel-tools">
                             <button id="deleteSelected" type="button" class="danger" disabled>선택 메시지 삭제</button>
@@ -1452,17 +1646,6 @@ Roll20/Tistory rules, including hidden-message removal and typography.
                     </div>
 
                 </div>
-            </div>
-        </div>
-
-
-        <!-- 미리보기 -->
-        <div class="card">
-            <p class="card-title" style="margin-bottom:10px;">편집 미리보기</p>
-            <p class="card-help" style="margin:0 0 10px;">미리보기의 이름·본문을 직접 클릭해 수정할 수 있습니다. 수정 내용은 HTML 복사에 그대로 반영됩니다.</p>
-            <p class="stat-line" id="statLine">원본을 입력하면 이곳에 결과가 표시됩니다.</p>
-            <div class="preview-scroll">
-                <div id="preview" class="textchatcontainer"></div>
             </div>
         </div>
 
@@ -2836,6 +3019,29 @@ let selected = new Set();
 let avatarMap = {};
 /* 메시지 요소 → 원본 아바타 주소 */
 let origAvatar = new Map();
+/* 인장 이미지를 삭제한 아바타의 원본 주소 모음 */
+let removedAvatars = new Set();
+/* 인장을 개별 삭제한 메시지 요소 모음 */
+let removedMsgAvatars = new Set();
+/* emote 양식으로 바꾼 메시지 { 요소 → { removed: 뺀 종류 클래스들, isO: is_o를 붙였는지 } } */
+let emoteConverted = new Map();
+/* 편집 목록에서 숨긴 아바타 카드의 키 모음 (인장/메시지에는 영향 없음) */
+let hiddenCards = new Set();
+/* 이름·이미지가 없는 발언에 새로 만들어 붙인 .avatar 요소 모음 */
+let createdAvatars = new Set();
+/* "이름이 ':'뿐이고 이미지도 없는 발언"을 한 묶음으로 다루기 위한 가상 키 */
+const NONAME = "__nameless_no_avatar__";
+/* "이름은 있는데 이미지가 없는 발언"은 이름별로 묶는다 (예: 아바타 없는 GM) */
+const NAMED_PREFIX = "__named_no_avatar__:";
+/* 이미지가 없는 발언을 묶는 가상 키인지 */
+function isVirtualKey(k){ return k === NONAME || (typeof k === "string" && k.indexOf(NAMED_PREFIX) === 0); }
+/* 메시지의 (원래) 종류 클래스 확인 — emote 양식으로 바꾼 메시지는 바꾸기 전 종류로 본다 */
+function hasType(m, t){
+  const rec = emoteConverted.get(m);
+  return m.classList.contains(t) || !!(rec && rec.removed.indexOf(t) >= 0);
+}
+/* 일반 대화(general) 또는 주사위 결과(rollresult) 메시지인지 */
+function isSpeech(m){ return m.classList.contains("general") || m.classList.contains("rollresult"); }
 let lastRemoved = 0;
 let lastDeleted = 0;
 
@@ -2942,7 +3148,96 @@ function prepareEditing(root){
  * 아바타 이미지 일괄 교체 (roll20.html 로직과 동일)
  * ------------------------------------------------------------ */
 function applyAvatars(){
-  origAvatar.forEach((src, m) => setAvatar(m, avatarMap[src] || src));
+  messages(preview).forEach(m => {
+    const src = origAvatar.get(m);
+
+    /* 이미지가 없는 발언(이름 없음 / 이름만 있음): 주소가 입력되면 인장을 만들어 붙이고, 비우면 다시 뺀다 */
+    if (isVirtualKey(src)) {
+      syncNamelessAvatar(m, avatarMap[src] || "");
+    }
+
+    const a = m.querySelector(".avatar");
+    const removed = removedMsgAvatars.has(m) || (src !== undefined && removedAvatars.has(src));
+    if (a) {
+      if (removed) a.setAttribute("data-avatar-removed", "1");
+      else a.removeAttribute("data-avatar-removed");
+    }
+    if (src && !isVirtualKey(src) && !removed) setAvatar(m, avatarMap[src] || src);
+  });
+}
+
+function syncNamelessAvatar(m, url){
+  let a = m.querySelector(".avatar");
+  if (url) {
+    if (!a) {
+      a = document.createElement("div");
+      a.className = "avatar";
+      a.setAttribute("aria-hidden", "true");
+      const spacer = m.querySelector(":scope > .spacer");
+      if (spacer) spacer.after(a); else m.insertBefore(a, m.firstChild);
+      createdAvatars.add(a);
+    }
+    let img = a.querySelector("img");
+    if (!img) { img = document.createElement("img"); a.appendChild(img); }
+    img.setAttribute("src", url);
+  } else if (a) {
+    const img = a.querySelector("img");
+    if (img) img.remove();
+    if (createdAvatars.has(a)) { a.remove(); createdAvatars.delete(a); }
+  }
+}
+
+/* 아바타별 메시지 묶음 { 원본주소 → [메시지들] }
+ * Roll20은 같은 사람이 연속해서 쓴 메시지에 아바타/이름을 첫 메시지에만 붙인다.
+ * 그래서 아바타·이름이 없는 general/rollresult 메시지는 바로 앞 발언자의 메시지로 본다.
+ * 단, desc 메시지는 앞 발언자의 연속 발언을 끊는다. desc 바로 뒤에 오는
+ * 이름 없는(':'뿐이거나 이름 표시가 없는) general 메시지는 인장 이미지가 있더라도
+ * '이름 없음 · 이미지 없음' 묶음으로 분류한다.
+ * (desc 메시지 자체는 어느 묶음에도 넣지 않는다) */
+function messagesByAvatar(){
+  const map = new Map();
+  const add = (key, m) => {
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(m);
+  };
+  let cur = "";      /* 현재 발언자(아바타 주소 또는 가상 키) */
+  let curPid = null; /* 현재 발언자의 data-playerid (있을 때만 비교) */
+  let prevDesc = false;
+
+  messages(preview).forEach(m => {
+    const afterDesc = prevDesc;
+    const isDesc = hasType(m, "desc");
+    prevDesc = isDesc;
+
+    /* desc: 연속 발언을 끊고, 어느 묶음에도 넣지 않는다 */
+    if (isDesc && !origAvatar.has(m)) { cur = ""; curPid = null; return; }
+
+    /* 아바타/이름이 붙은 첫 메시지 */
+    if (origAvatar.has(m)) {
+      let key = origAvatar.get(m);
+      /* desc 바로 뒤의 이름 없는 General → 이미지가 있어도 '이름 없음' 묶음 */
+      if (afterDesc && hasType(m, "general")) {
+        const nm = m.querySelector(".by") ? getName(m) : "";
+        if (!nm) key = NONAME;
+      }
+      cur = key;
+      curPid = m.getAttribute("data-playerid");
+      add(cur, m);
+      return;
+    }
+    /* 그 밖에 아바타/이름이 있는 메시지(emote 등): 연속 발언을 끊는다 */
+    if (m.querySelector(".avatar, .by")) { cur = ""; curPid = null; return; }
+
+    /* 아바타도 이름(:)도 없는 메시지 */
+    const general = hasType(m, "general");
+    if (!general && !m.classList.contains("rollresult")) return;
+
+    const pid = m.getAttribute("data-playerid");
+    const sameSpeaker = cur && !(pid && curPid && pid !== curPid);
+    if (sameSpeaker) add(cur, m);              /* 앞 발언자의 연속 메시지 */
+    else if (general) add(NONAME, m);          /* 이어 붙일 발언자가 없는 General 텍스트 → 이름 없음 · 이미지 없음 */
+  });
+  return map;
 }
 
 function applySavedAvatar(src, value){
@@ -2953,19 +3248,25 @@ function applySavedAvatar(src, value){
 }
 
 function collectAvatars(){
+  const groups = messagesByAvatar();
   const data = {};
   origAvatar.forEach((src, m) => {
     if (!src) return;
-    if (!data[src]) data[src] = { count: 0, nicknames: {} };
-    data[src].count++;
+    if (!data[src]) data[src] = { nicknames: {}, heads: 0 };
+    data[src].heads++;
     const n = m.querySelector(".by") ? getName(m) : "";
     if (n) data[src].nicknames[n] = true;
   });
+  /* 이어 붙일 발언자가 없는 General 텍스트만 있어도 '이름 없음 · 이미지 없음' 카드는 보여 준다 */
+  if (groups.has(NONAME) && !data[NONAME]) data[NONAME] = { nicknames: {}, heads: 0 };
+
+  const rank = k => k === NONAME ? 2 : (isVirtualKey(k) ? 1 : 0);
   return Object.keys(data).map(src => ({
     src: src,
-    count: data[src].count,
+    count: (groups.get(src) || []).length,
+    heads: data[src].heads,   /* 인장을 붙일 수 있는(이름/아바타 표시가 있는) 첫 메시지 수 */
     nicknames: Object.keys(data[src].nicknames)
-  })).sort((a, b) => b.count - a.count);
+  })).sort((a, b) => (rank(a.src) - rank(b.src)) || (b.count - a.count));
 }
 
 function buildAvatarRows(avatars){
@@ -2980,46 +3281,168 @@ function buildAvatarRows(avatars){
     return;
   }
 
-  avatars.forEach(info => {
+  const visible = avatars.filter(info => !hiddenCards.has(info.src));
+  const hiddenCount = avatars.length - visible.length;
+
+  visible.forEach(info => {
+    const virtual = isVirtualKey(info.src);   /* 이미지가 없는 발언 묶음 */
+    const canAttach = !virtual || info.heads > 0;   /* 인장을 새로 붙일 발언이 있는가 */
+
     const card = document.createElement("div");
     card.className = "icon-card";
 
     const img = document.createElement("img");
-    img.src = avatarMap[info.src] || info.src;
     img.alt = "";
     img.onerror = function(){ this.style.opacity = "0.3"; };
+
+    /* 인장 이미지가 없거나 삭제된 카드는 img 대신 이 빈 칸을 보여 준다 (깨진 이미지 방지) */
+    const emptyThumb = document.createElement("div");
+    emptyThumb.className = "icon-thumb-empty";
+    emptyThumb.textContent = "없음";
 
     const meta = document.createElement("div");
     meta.className = "icon-card-info";
 
     const nameEl = document.createElement("span");
     nameEl.className = "icon-card-name";
-    nameEl.textContent = info.nicknames.length ? info.nicknames.join(", ") : "(이름 없음)";
+    nameEl.textContent = info.src === NONAME
+      ? "(이름 없음 · 이미지 없음)"
+      : virtual
+        ? (info.nicknames.join(", ") || "(이름 없음)") + " · 이미지 없음"
+        : (info.nicknames.length ? info.nicknames.join(", ") : "(이름 없음)");
     nameEl.title = nameEl.textContent;
+
+    /* 메시지 수 + 메시지 선택 버튼 */
+    const line = document.createElement("div");
+    line.className = "icon-card-line";
 
     const countEl = document.createElement("span");
     countEl.className = "icon-card-meta";
     countEl.textContent = info.count + "개 메시지";
-    countEl.title = info.src;
+    countEl.title = info.src === NONAME
+      ? "이름(:)도 인장 이미지도 없는 메시지 (이어 붙일 발언자가 없는 General 텍스트, desc 바로 뒤의 이름 없는 General 메시지 포함)"
+      : virtual ? "인장 이미지가 없는 발언" : info.src;
+
+    const selBtn = document.createElement("button");
+    selBtn.type = "button";
+    selBtn.className = "mini ghost";
+    selBtn.textContent = "메시지 선택";
+    selBtn.title = "이 아바타의 메시지를 모두 선택 (Shift+클릭: 기존 선택에 추가)";
+
+    line.appendChild(countEl);
+    line.appendChild(selBtn);
+
+    /* 이미지 주소 입력 + 삭제/복원 버튼 */
+    const row = document.createElement("div");
+    row.className = "icon-card-input-row";
 
     const inp = document.createElement("input");
     inp.type = "text";
-    inp.placeholder = "새 이미지 주소를 입력하세요";
+    inp.placeholder = virtual ? "추가할 이미지 주소" : "새 이미지 주소";
     inp.value = avatarMap[info.src] || "";
+    if (!canAttach) {
+      inp.disabled = true;
+      inp.placeholder = "인장을 붙일 발언 없음";
+      inp.title = "이 묶음에는 이름/아바타 표시가 있는 첫 메시지가 없어 인장을 붙일 곳이 없습니다.";
+    }
+
+    row.appendChild(inp);
+
+    let delBtn = null;
+    if (!virtual) {
+      delBtn = document.createElement("button");
+      delBtn.type = "button";
+      row.appendChild(delBtn);
+    }
+
+    /* 썸네일/버튼 상태 갱신 */
+    function refreshCard(){
+      const url = avatarMap[info.src] || (virtual ? "" : info.src);
+      if (url) img.src = url; else img.removeAttribute("src");
+      img.style.opacity = "1";
+      card.classList.toggle("no-image", !url);
+
+      if (!delBtn) return;
+      const removed = removedAvatars.has(info.src);
+      card.classList.toggle("is-removed", removed);
+      inp.disabled = removed;
+      inp.placeholder = removed ? "인장 이미지 삭제됨" : "새 이미지 주소";
+      delBtn.textContent = removed ? "복원" : "삭제";
+      delBtn.className = removed ? "mini ghost" : "mini danger";
+      delBtn.title = removed ? "삭제한 인장 이미지를 되돌립니다" : "이 아바타의 인장 이미지를 모든 메시지에서 삭제합니다";
+    }
 
     inp.addEventListener("change", function(){
-      img.src = this.value.trim() || info.src;
-      img.style.opacity = "1";
       applySavedAvatar(info.src, this.value);
+      refreshCard();
+    });
+
+    if (delBtn) {
+      delBtn.addEventListener("click", function(){
+        if (removedAvatars.has(info.src)) {
+          removedAvatars.delete(info.src);
+          toast("인장 이미지를 복원했습니다.");
+        } else {
+          removedAvatars.add(info.src);
+          toast("인장 이미지를 삭제했습니다. (복원 버튼으로 되돌릴 수 있습니다)");
+        }
+        applyAvatars();
+        refreshCard();
+      });
+    }
+
+    selBtn.addEventListener("click", function(e){
+      const group = messagesByAvatar().get(info.src) || [];
+      if (!group.length) { toast("선택할 메시지가 없습니다."); return; }
+      if (!e.shiftKey) selected.clear();
+      group.forEach(m => selected.add(m));
+      refreshSelection();
+      toast("메시지 " + group.length + "개를 선택했습니다. 오른쪽에서 배경색을 고르세요.");
     });
 
     meta.appendChild(nameEl);
-    meta.appendChild(countEl);
-    meta.appendChild(inp);
+    meta.appendChild(line);
+    meta.appendChild(row);
     card.appendChild(img);
+    card.appendChild(emptyThumb);
     card.appendChild(meta);
+
+    /* 목록에서 이 아바타 숨기기 (× 버튼) */
+    const hideBtn = document.createElement("button");
+    hideBtn.type = "button";
+    hideBtn.className = "icon-card-hide";
+    hideBtn.textContent = "\u00d7";
+    hideBtn.setAttribute("aria-label", "이 아바타를 목록에서 숨기기");
+    hideBtn.title = "편집이 필요 없는 아바타를 목록에서 숨깁니다 (메시지와 인장은 그대로 유지)";
+    hideBtn.addEventListener("click", function(){
+      hiddenCards.add(info.src);
+      buildAvatarRows(collectAvatars());
+      toast("아바타를 목록에서 숨겼습니다. (목록 아래 '모두 다시 보기'로 되돌릴 수 있습니다)");
+    });
+    card.appendChild(hideBtn);
+
     list.appendChild(card);
+    refreshCard();
   });
+
+  /* 숨긴 아바타가 있으면 안내 줄 + 다시 보기 */
+  if (hiddenCount) {
+    const note = document.createElement("div");
+    note.className = "icon-hidden-note";
+    const txt = document.createElement("span");
+    txt.textContent = "숨긴 아바타 " + hiddenCount + "개";
+    const showBtn = document.createElement("button");
+    showBtn.type = "button";
+    showBtn.className = "mini ghost";
+    showBtn.textContent = "모두 다시 보기";
+    showBtn.addEventListener("click", function(){
+      hiddenCards.clear();
+      buildAvatarRows(collectAvatars());
+    });
+    note.appendChild(txt);
+    note.appendChild(showBtn);
+    list.appendChild(note);
+  }
 }
 
 
@@ -3036,6 +3459,21 @@ function refreshSelection(){
 }
 
 preview.addEventListener("click", e => {
+  /* 인장 오른쪽 위의 × 를 누르면 그 메시지의 인장만 삭제 (메시지 선택은 하지 않음) */
+  const av = e.target.closest ? e.target.closest(".avatar") : null;
+  if (av && preview.contains(av) && !av.hasAttribute("data-avatar-removed")) {
+    const r = av.getBoundingClientRect();
+    if (e.clientX >= r.right - 13 && e.clientY <= r.top + 13) {
+      const am = av.closest(".message");
+      if (am) {
+        removedMsgAvatars.add(am);
+        applyAvatars();
+        toast("이 메시지의 인장을 삭제했습니다.");
+      }
+      return;
+    }
+  }
+
   const m = e.target.closest ? e.target.closest(".message") : null;
   if (!m || !preview.contains(m)) return;
   if (e.shiftKey) {
@@ -3047,16 +3485,53 @@ preview.addEventListener("click", e => {
   refreshSelection();
 });
 
+/* emote 양식으로 바꿨던 메시지를 원래 종류로 되돌린다 */
+function revertEmote(m){
+  const rec = emoteConverted.get(m);
+  if (!rec) return;
+  m.classList.remove("emote");
+  if (rec.isO) m.classList.remove("is_o");
+  rec.removed.forEach(c => m.classList.add(c));
+  emoteConverted.delete(m);
+}
+
 function setBg(c){
   if (!selected.size) { toast("먼저 미리보기에서 메시지를 클릭해 선택하세요."); return; }
-  selected.forEach(m => c ? (m.style.backgroundColor = c) : m.style.removeProperty("background-color"));
+  selected.forEach(m => {
+    revertEmote(m);   /* 다른 색/지우기를 고르면 emote 양식은 해제 */
+    c ? (m.style.backgroundColor = c) : m.style.removeProperty("background-color");
+  });
   refreshSelection();
+}
+
+/* 선택 메시지를 message emote 양식으로 변경
+ * emote 클래스를 붙이면 .emote 스타일(배경색·기울임·굵게·가운데 정렬·왼쪽 띠 색)이 그대로 적용된다.
+ * 인장이 있는 메시지는 emote.is_o 규칙(왼쪽 45px 여백)이 적용되도록 is_o도 붙인다. */
+function applyEmote(){
+  if (!selected.size) { toast("먼저 미리보기에서 메시지를 클릭해 선택하세요."); return; }
+  let changed = 0, skipped = 0;
+  selected.forEach(m => {
+    m.style.removeProperty("background-color");   /* 직접 칠한 색이 emote 배경을 가리지 않도록 */
+    if (m.classList.contains("emote")) return;    /* 이미 emote */
+    if (m.classList.contains("rollresult")) { skipped++; return; }   /* 주사위 결과는 서식이 깨지므로 제외 */
+    const removed = ["general", "you", "desc"].filter(c => m.classList.contains(c));
+    removed.forEach(c => m.classList.remove(c));
+    m.classList.add("emote");
+    const isO = !!m.querySelector(".avatar") && !m.classList.contains("is_o");
+    if (isO) m.classList.add("is_o");
+    emoteConverted.set(m, { removed: removed, isO: isO });
+    changed++;
+  });
+  refreshSelection();
+  toast(changed
+    ? "메시지 " + changed + "개를 emote 양식으로 바꿨습니다." + (skipped ? " (주사위 결과 " + skipped + "개 제외)" : "")
+    : (skipped ? "주사위 결과 메시지는 emote로 바꾸지 않습니다." : "이미 emote 양식입니다."));
 }
 
 $$("#colorPresets button").forEach(b => {
   b.onclick = () => {
-    const c = b.dataset.color;
-    setBg(c);
+    if (b.dataset.preset === "emote") { applyEmote(); return; }
+    setBg(b.dataset.color);
   };
 });
 
@@ -3110,6 +3585,70 @@ $("#undoDelete").onclick = () => {
 };
 
 
+/* 텍스트 일괄 바꾸기: 미리보기(=복사 결과)의 이름·본문 텍스트에서
+ * 찾을 내용을 변경 내용으로 한 번에 바꾼다. 다이스 결과 등 HTML 태그 구조는
+ * 건드리지 않고, 편집 가능한(r20-editable) 텍스트 노드만 대상으로 한다.
+ * "복구"는 가장 최근 바꾸기부터 되돌린다. */
+const findInput = $("#findText");
+const replaceInput = $("#replaceText");
+const replaceStatus = $("#replaceStatus");
+let replaceHistory = [];
+
+function refreshReplaceUndo(){
+  const btn = $("#undoReplace");
+  const last = replaceHistory[replaceHistory.length - 1];
+  btn.disabled = !last;
+  btn.textContent = last ? "복구 (" + last.length + "건)" : "복구";
+}
+
+function editableTextNodes(root){
+  const nodes = [];
+  root.querySelectorAll("[data-editable]").forEach(el => {
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    let n;
+    while ((n = walker.nextNode())) nodes.push(n);
+  });
+  return nodes;
+}
+
+$("#applyReplace").addEventListener("click", () => {
+  const find = findInput.value;
+  const repl = replaceInput.value;
+  if (!find) { toast("찾을 내용을 입력하세요."); return; }
+  if (!messages(preview).length) { toast("먼저 Roll20 HTML을 붙여넣어 주세요."); return; }
+
+  const batch = [];
+  let count = 0;
+  editableTextNodes(preview).forEach(node => {
+    const before = node.nodeValue;
+    if (!before || before.indexOf(find) === -1) return;
+    count += before.split(find).length - 1;
+    batch.push({ node, before });
+    node.nodeValue = before.split(find).join(repl);
+  });
+
+  if (!count) {
+    replaceStatus.textContent = "\"" + find + "\"을(를) 찾지 못했습니다.";
+    toast("일치하는 텍스트를 찾지 못했습니다.");
+    return;
+  }
+
+  replaceHistory.push(batch);
+  refreshReplaceUndo();
+  replaceStatus.textContent = "\"" + find + "\" → \"" + repl + "\" : " + count + "건 바뀜";
+  toast("텍스트 " + count + "건을 바꿨습니다.");
+});
+
+$("#undoReplace").addEventListener("click", () => {
+  const batch = replaceHistory.pop();
+  if (!batch) return;
+  batch.forEach(item => { item.node.nodeValue = item.before; });
+  refreshReplaceUndo();
+  replaceStatus.textContent = "직전 바꾸기를 복구했습니다.";
+  toast("바꾸기를 복구했습니다.");
+});
+
+
 /* ------------------------------------------------------------
  * 입력 처리 (붙여넣기 / 파일 불러오기 즉시 반영)
  * ------------------------------------------------------------ */
@@ -3127,10 +3666,18 @@ function clearAll(){
   selected.clear();
   origAvatar = new Map();
   avatarMap = {};
+  removedAvatars = new Set();
+  removedMsgAvatars = new Set();
+  createdAvatars = new Set();
+  hiddenCards = new Set();
+  emoteConverted = new Map();
   lastRemoved = 0;
   lastDeleted = 0;
   deleteHistory = [];
   refreshUndo();
+  replaceHistory = [];
+  refreshReplaceUndo();
+  replaceStatus.textContent = "";
   buildAvatarRows([]);
   refreshSelection();
   updateStat();
@@ -3143,6 +3690,9 @@ function loadSource(html){
     lastDeleted = 0;
     deleteHistory = [];
     refreshUndo();
+    replaceHistory = [];
+    refreshReplaceUndo();
+    replaceStatus.textContent = "";
 
     preview.innerHTML = "";
     [...root.childNodes].forEach(n => preview.appendChild(document.importNode(n, true)));
@@ -3150,10 +3700,24 @@ function loadSource(html){
     /* 새 원본을 불러오면 이전 선택/아바타 교체는 초기화 */
     selected.clear();
     avatarMap = {};
+    removedAvatars = new Set();
+    removedMsgAvatars = new Set();
+    createdAvatars = new Set();
+    hiddenCards = new Set();
+    emoteConverted = new Map();
     origAvatar = new Map();
     messages(preview).forEach(m => {
       const src = getAvatar(m);
-      if (src) origAvatar.set(m, src);
+      if (src) { origAvatar.set(m, src); return; }
+
+      /* 이미지가 없는 General 발언의 첫 메시지 → 가상 묶음으로 등록
+         (이름이 있으면 이름별 묶음, 이름이 ':'뿐이거나 없으면 '이름 없음 · 이미지 없음') */
+      if (!isSpeech(m)) return;
+      const hasBy = !!m.querySelector(".by");
+      const hasAv = !!m.querySelector(".avatar");
+      if (!hasBy && !hasAv) return;   /* 표시가 전혀 없는 메시지는 첫 메시지가 아님 */
+      const name = hasBy ? getName(m) : "";
+      origAvatar.set(m, name ? NAMED_PREFIX + name : NONAME);
     });
 
     prepareEditing(preview);
@@ -3169,16 +3733,6 @@ function loadSource(html){
 input.addEventListener("input", function(){
   if (!this.value.trim()) { clearAll(); return; }
   loadSource(this.value);
-});
-
-$("#r20FileInput").addEventListener("change", function(){
-  const file = this.files[0];
-  if (!file) return;
-  file.text().then(text => {
-    input.value = text;
-    loadSource(text);
-    this.value = "";
-  }).catch(() => toast("파일을 읽지 못했습니다."));
 });
 
 
@@ -3202,6 +3756,7 @@ function getExportHtml(){
     el.classList.remove("r20-editable");
     if (!el.getAttribute("class")) el.removeAttribute("class");
   });
+  clone.querySelectorAll("[data-avatar-removed]").forEach(el => el.remove());
   clone.querySelectorAll(".editor-selected").forEach(el => el.classList.remove("editor-selected"));
   clone.querySelectorAll('[style=""]').forEach(el => el.removeAttribute("style"));
   clone.querySelectorAll("script").forEach(e => e.remove());
