@@ -1360,21 +1360,21 @@
         #r20App .left-col {
             min-height: 0;
         }
-        #r20App .left-col #previewCard {
+        #r20App .left-col #editCard {
             flex: 1;
             min-height: 0;
             display: flex;
             flex-direction: column;
         }
-        #r20App .left-col #previewCard .preview-scroll {
+        #r20App .left-col #editCard .card-body {
             flex: 1;
             min-height: 0;
-            max-height: none;
+            overflow-y: auto;
         }
     }
 
-    /* 좌측 컬럼은 gap을 쓰지 않으므로 입력창과 미리보기 사이 간격을 직접 지정 */
-    #previewCard { margin-top: 16px; }
+    /* 좌측 컬럼은 gap을 쓰지 않으므로 입력창과 아바타·메시지 편집 카드 사이 간격을 직접 지정 */
+    #editCard { margin-top: 16px; }
 
     /* 편집 미리보기 제목 + HTML 복사 버튼(우상단) */
     .preview-header {
@@ -1586,40 +1586,6 @@ Roll20/Tistory rules, including hidden-message removal and typography.
             </div>
         </div>
 
-        <!-- 미리보기 -->
-        <div class="card" id="previewCard">
-            <div class="preview-header">
-                <p class="card-title" style="margin:0;">편집 미리보기</p>
-                <button id="copyBtn" type="button">HTML 복사</button>
-            </div>
-            <p class="card-help" style="margin:0 0 10px;">미리보기의 이름·본문을 직접 클릭해 수정할 수 있습니다. 인장에 마우스를 올리면 오른쪽 위에 나타나는 <b>×</b>를 눌러 그 메시지의 인장만 삭제할 수 있습니다. 수정 내용은 HTML 복사 시에 그대로 반영됩니다. (원본에 영향 없음) </p>
-            <p class="stat-line" id="statLine">원본을 입력하면 이곳에 결과가 표시됩니다.</p>
-            <div class="preview-scroll">
-                <div id="preview" class="textchatcontainer"></div>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- 우측: 편집 도구 -->
-    <div class="right-col">
-
-        <!-- 텍스트 일괄 바꾸기 -->
-        <div class="card" id="replaceCard">
-            <p class="card-title" style="margin-bottom:10px;">텍스트 일괄 바꾸기</p>
-            <p class="card-help" style="margin:0 0 10px;">찾을 내용을 입력한 뒤 <b>검색</b> 버튼(또는 Enter)을 누르면 일치하는 위치로 미리보기가 하나씩 순서대로 이동합니다. (<b>이전</b> 버튼 또는 Shift+Enter: 거꾸로 이동) <b>1개 변환</b>은 현재 표시된 항목 1개만 바꾼 뒤 다음 항목으로 넘어가며, <b>일괄 변환</b>은 모든 일치 항목을 한 번에 바꿉니다. 복구는 가장 최근 변환부터 되돌립니다.</p>
-            <div class="replace-row">
-                <input type="text" id="findText" placeholder="찾을 내용">
-                <input type="text" id="replaceText" placeholder="변경 내용">
-                <button id="findPrev" type="button" class="ghost">이전</button>
-                <button id="findNext" type="button">검색</button>
-                <button id="applyReplace" type="button">1개 변환</button>
-                <button id="applyReplaceAll" type="button">일괄 변환</button>
-                <button id="undoReplace" type="button" class="ghost" disabled>복구</button>
-            </div>
-            <p class="sel-status" id="replaceStatus"></p>
-        </div>
-
         <!-- 아바타 이미지 교체 + 선택 메시지 편집 (통합) -->
         <div class="card" id="editCard">
             <div class="card-header" data-toggle="editCard">
@@ -1653,6 +1619,40 @@ Roll20/Tistory rules, including hidden-message removal and typography.
                     </div>
 
                 </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 우측: 편집 도구 -->
+    <div class="right-col">
+
+        <!-- 텍스트 일괄 바꾸기 -->
+        <div class="card" id="replaceCard">
+            <p class="card-title" style="margin-bottom:10px;">텍스트 일괄 바꾸기</p>
+            <p class="card-help" style="margin:0 0 10px;">찾을 내용을 입력한 뒤 <b>검색</b> 버튼(또는 Enter)을 누르면 일치하는 위치로 미리보기가 하나씩 순서대로 이동합니다. (<b>이전</b> 버튼 또는 Shift+Enter: 거꾸로 이동) <b>1개 변환</b>은 현재 표시된 항목 1개만 바꾼 뒤 다음 항목으로 넘어가며, <b>일괄 변환</b>은 모든 일치 항목을 한 번에 바꿉니다. 복구는 가장 최근 변환부터 되돌립니다.</p>
+            <div class="replace-row">
+                <input type="text" id="findText" placeholder="찾을 내용">
+                <input type="text" id="replaceText" placeholder="변경 내용">
+                <button id="findPrev" type="button" class="ghost">이전</button>
+                <button id="findNext" type="button">검색</button>
+                <button id="applyReplace" type="button">1개 변환</button>
+                <button id="applyReplaceAll" type="button">일괄 변환</button>
+                <button id="undoReplace" type="button" class="ghost" disabled>복구</button>
+            </div>
+            <p class="sel-status" id="replaceStatus"></p>
+        </div>
+
+        <!-- 미리보기 -->
+        <div class="card" id="previewCard">
+            <div class="preview-header">
+                <p class="card-title" style="margin:0;">편집 미리보기</p>
+                <button id="copyBtn" type="button">HTML 복사</button>
+            </div>
+            <p class="card-help" style="margin:0 0 10px;">미리보기의 이름·본문을 직접 클릭해 수정할 수 있습니다. 인장에 마우스를 올리면 오른쪽 위에 나타나는 <b>×</b>를 눌러 그 메시지의 인장만 삭제할 수 있습니다. 수정 내용은 HTML 복사 시에 그대로 반영됩니다. (원본에 영향 없음) </p>
+            <p class="stat-line" id="statLine">원본을 입력하면 이곳에 결과가 표시됩니다.</p>
+            <div class="preview-scroll">
+                <div id="preview" class="textchatcontainer"></div>
             </div>
         </div>
 
