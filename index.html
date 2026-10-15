@@ -1688,7 +1688,7 @@ Roll20/Tistory rules, including hidden-message removal and typography.
 
 <!-- ============================================================
      [Wiki Editor] 원본 코드 (위키 에디터 HTML 전체)
-     - 그대로 복사해 둔 코드이며, <script>/<!-- 같은 문자열만 \uE000 로 바꿔 두었습니다.
+     - 그대로 복사해 둔 코드이며, 스크립트 태그·주석 시작 부분의 '<' 만 \uE000 로 바꿔 두었습니다.
        (탭을 열 때 자동으로 되돌려서 실행하므로 수정하지 마세요)
      ============================================================ -->
 <script type="text/plain" id="wikiSource">
@@ -1788,6 +1788,20 @@ Roll20/Tistory rules, including hidden-message removal and typography.
         .modal-btns{display:flex;gap:10px;justify-content:flex-end}
         .modal-btns button{padding:10px 20px;border:none;border-radius:4px;cursor:pointer;font-family:inherit}
         .btn-primary{background:#af0505;color:#fff}.btn-secondary{background:#e9ecef;color:#333}
+        /* 책갈피 목록 (불러오기 창) */
+        #importM .modal-box{max-width:520px;max-height:92vh;overflow:auto}
+        .bm-head{font-size:13px;font-weight:700;color:#555;margin:0 0 8px}
+        .bm-sep{margin:20px 0 10px;padding-top:16px;border-top:1px dashed #dee2e6;font-size:13px;font-weight:700;color:#555}
+        #bmList{border:1px solid #dee2e6;border-radius:6px;max-height:240px;overflow:auto;margin-bottom:12px;background:#fff}
+        #bmList .bm-empty{padding:20px 14px;text-align:center;color:#888;font-size:13px;line-height:1.6}
+        #bmList .bm-row{display:flex;align-items:stretch;border-bottom:1px solid #eee}
+        #bmList .bm-row:last-child{border-bottom:0}
+        #bmList .bm-open{flex:1;min-width:0;text-align:left;padding:10px 14px;border:0;background:#fff;cursor:pointer;font-family:inherit}
+        #bmList .bm-open:hover{background:#f8f9fa}
+        #bmList .bm-open b{display:block;font-size:14px;color:#222;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        #bmList .bm-open small{display:block;margin:3px 0 0;color:#888;font-size:11.5px}
+        #bmList .bm-del{border:0;border-left:1px solid #eee;background:#fff;color:#999;cursor:pointer;padding:0 16px;font-size:15px}
+        #bmList .bm-del:hover{color:#af0505;background:#fff5f5}
         #notice{background:#fff3cd;border:1px solid #ffc107;border-radius:4px;padding:10px 15px;margin:12px;font-size:13px;color:#856404}
         #blockDel{position:absolute;display:none;z-index:900;width:26px;height:26px;border:none;border-radius:50%;background:#af0505;color:#fff;cursor:pointer;font-size:16px;line-height:26px;padding:0;box-shadow:0 1px 4px rgba(0,0,0,.3)}
         .wiki [id]{scroll-margin-top:110px}
@@ -1922,8 +1936,9 @@ Roll20/Tistory rules, including hidden-message removal and typography.
     <div id="toolbar">
         <div class="btn-group">
         <button onclick="toggleEdit()" id="editBtn"><i class="bi bi-pencil-square"></i> 편집</button>
-        <button onclick="openModal('importM')"><i class="bi bi-folder2-open"></i> 불러오기</button>
-        <button onclick="save()"><i class="bi bi-cloud-check"></i> 저장</button>
+        <button onclick="openLoad()" title="저장해 둔 책갈피 또는 HTML 불러오기"><i class="bi bi-folder2-open"></i> 불러오기</button>
+        <button onclick="save()" title="문서의 '이름'으로 책갈피에 저장 (같은 이름이면 자동 덮어쓰기)"><i class="bi bi-cloud-check"></i> 저장</button>
+        <button onclick="resetDoc()" title="지금 작성 중인 내용을 지우고 처음 서식으로 되돌리기"><i class="bi bi-eraser"></i> 초기화</button>
         <button onclick="copyCode()"><i class="bi bi-clipboard"></i> 코드복사</button>
         <button onclick="downloadCode()"><i class="bi bi-download"></i> 다운로드</button>
         <button onclick="saveImage()" id="imgSaveBtn"><i class="bi bi-camera"></i> 이미지 저장</button>
@@ -2053,11 +2068,15 @@ Roll20/Tistory rules, including hidden-message removal and typography.
     </div></div>
 
     <div class="modal" id="importM"><div class="modal-box">
-        <h3>HTML 불러오기</h3>
+        <h3>불러오기</h3>
+        <div class="bm-head"><i class="bi bi-bookmarks"></i> 저장된 책갈피 — 눌러서 불러오기</div>
+        <div id="bmList"></div>
+        <small>[저장]을 누르면 문서의 '이름'(맨 위 제목)으로 저장되고, 같은 이름이 있으면 자동으로 덮어씁니다.</small>
+        <div class="bm-sep"><i class="bi bi-file-earmark-code"></i> HTML 파일·코드로 불러오기</div>
         <input type="file" id="importFile" accept=".html,.htm,text/html">
         <textarea id="importText" placeholder="또는 복사한 HTML을 여기에 붙여넣기"></textarea>
         <small>이 편집기에서 복사·다운로드한 HTML(티스토리 HTML 편집 화면에서 다시 복사한 내용도 가능)을 불러와 이어서 편집합니다.</small>
-        <div class="modal-btns"><button class="btn-secondary" onclick="closeModal()">취소</button><button class="btn-primary" onclick="importHTML()">불러오기</button></div>
+        <div class="modal-btns"><button class="btn-secondary" onclick="closeModal()">닫기</button><button class="btn-primary" onclick="importHTML()">HTML 불러오기</button></div>
     </div></div>
 
     <div class="modal" id="linkM"><div class="modal-box">
@@ -2114,6 +2133,7 @@ Roll20/Tistory rules, including hidden-message removal and typography.
     script>
         /* ================= 공통 ================= */
         const wiki=document.querySelector('.wiki'),delBtn=document.getElementById('blockDel');
+        const INIT_HTML=wiki.innerHTML;   // 처음 서식 ([초기화]용)
         const $=id=>document.getElementById(id);
         const nodeEl=n=>n.nodeType===1?n:n.parentElement;
         const isBlank=el=>!el.textContent.replace(/[\s​]/g,'')&&!el.querySelector('img');
@@ -3577,6 +3597,27 @@ Roll20/Tistory rules, including hidden-message removal and typography.
         /* ================= 저장 / 내보내기 ================= */
         /* 저장: 브라우저 데이터베이스(IndexedDB, 용량 큼)에 저장. localStorage(약 5MB)는 예비.
            이미지가 많아 localStorage가 넘치거나 브라우저가 저장을 막아도 조용히 실패하지 않도록 처리 */
+        /* 저장 공간 연결: 이 편집기가 iframe(탭) 안에서 열려 있고 그 안에서 저장소가 막혀 있으면
+           (사파리·인앱 브라우저 등) 바깥 페이지가 대신 저장해 줌. 단독으로 열었을 때는 기존과 동일 */
+        const inFrame=window.parent!==window;
+        const parentCall=(op,args)=>new Promise((res,rej)=>{
+            if(!inFrame) return rej(new Error('no-parent'));
+            const id=Math.random().toString(36).slice(2);
+            const done=(fn,v)=>{removeEventListener('message',h);clearTimeout(tm);fn(v);};
+            const h=e=>{const m=e.data;if(e.source!==parent||!m||m.wikiStoreReply!==1||m.id!==id) return;m.ok?done(res,m.value):done(rej,new Error(m.error));};
+            const tm=setTimeout(()=>done(rej,new Error('timeout')),8000);
+            addEventListener('message',h);
+            try{parent.postMessage({wikiStore:1,id,op,args},'*');}catch(e){done(rej,e);}
+        });
+        const lsx={
+            async get(k){try{return localStorage.getItem(k);}catch(e){return parentCall('lsGet',[k]);}},
+            async set(k,v){try{localStorage.setItem(k,v);}catch(e){await parentCall('lsSet',[k,v]);}},
+            async remove(k){try{localStorage.removeItem(k);}catch(e){await parentCall('lsRemove',[k]);}},
+            async list(prefix){
+                try{const o=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith(prefix)) o.push(localStorage.getItem(k));}return o;}
+                catch(e){return parentCall('lsList',[prefix]);}
+            }
+        };
         const store={
             db:null,
             open(){
@@ -3594,27 +3635,118 @@ Roll20/Tistory rules, including hidden-message removal and typography.
                 });
             },
             get(k){return this.req('readonly',s=>s.get(k));},
-            set(k,v){return this.req('readwrite',s=>s.put(v,k));}
+            set(k,v){return this.req('readwrite',s=>s.put(v,k));},
+            del(k){return this.req('readwrite',s=>s.delete(k));},
+            list(prefix){return this.req('readonly',s=>s.getAll(IDBKeyRange.bound(prefix,prefix+'\uffff')));}
         };
+        ['get','set','del','list'].forEach(op=>{
+            const direct=store[op].bind(store);
+            store[op]=async(...a)=>{
+                try{return await Promise.race([direct(...a),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000))]);}
+                catch(e){if(!inFrame) throw e;return parentCall(op,a);}
+            };
+        });
         async function saveDraft(){
             const html=wiki.innerHTML;
             let ok=false;
             try{await store.set('draft',html);ok=true;}catch(e){}
-            try{localStorage.setItem('wiki-draft',html);ok=true;}
-            catch(e){try{localStorage.removeItem('wiki-draft');}catch(_){}}   // 넘치면 예전 사본을 지워 옛 내용이 불러와지지 않게
+            try{await lsx.set('wiki-draft',html);ok=true;}
+            catch(e){try{await lsx.remove('wiki-draft');}catch(_){}}   // 넘치면 예전 사본을 지워 옛 내용이 불러와지지 않게
             return ok;
         }
         async function loadDraft(){
             try{const d=await store.get('draft');if(d) return d;}catch(e){}
-            try{return localStorage.getItem('wiki-draft');}catch(e){return null;}
+            try{return await lsx.get('wiki-draft');}catch(e){return null;}
         }
         let autoTimer=null;
         let dirty=false;
         const autoSave=()=>{dirty=true;clearTimeout(autoTimer);autoTimer=setTimeout(saveDraft,1500);};
+        /* ================= 책갈피 (이름별 저장 · 불러오기 · 초기화) ================= */
+        /* 문서의 '이름'(맨 위 제목 h2)을 책갈피 이름으로 사용. 같은 이름으로 저장하면 자동 덮어쓰기 */
+        const BM='bm:',BM_LS='wiki-bm:';
+        let bmBase=null;   // 마지막으로 저장·불러온 시점의 내용 (저장하지 않은 변경이 있는지 확인용)
+        const bmName=()=>((wiki.querySelector('h2')||{}).textContent||'').replace(/\s+/g,' ').trim()||'제목 없음';
+        async function bmPut(rec){
+            try{await store.set(BM+rec.name,rec);try{await lsx.remove(BM_LS+rec.name);}catch(_){}return true;}catch(e){}
+            try{await lsx.set(BM_LS+rec.name,JSON.stringify(rec));return true;}catch(e){}
+            return false;
+        }
+        async function bmAll(){
+            const m=new Map();
+            try{(await store.list(BM)).forEach(r=>{if(r&&r.name) m.set(r.name,r);});}catch(e){}
+            try{(await lsx.list(BM_LS)).forEach(s=>{try{const r=JSON.parse(s);if(r&&r.name&&!m.has(r.name)) m.set(r.name,r);}catch(_){}});}catch(e){}
+            return [...m.values()].sort((a,b)=>(b.at||0)-(a.at||0));   // 최근에 저장한 순
+        }
+        async function bmDelete(name){
+            try{await store.del(BM+name);}catch(e){}
+            try{await lsx.remove(BM_LS+name);}catch(e){}
+        }
+        const bmTime=ms=>{if(!ms) return '';const d=new Date(ms),z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}`;};
+        // 문서 전체를 교체 (책갈피 불러오기·초기화 공용). 뒤로가기로 되돌릴 수 있음
+        function applyDoc(html){
+            flushHistory();
+            wiki.innerHTML=html;
+            const ph=wiki.querySelector('#mainImg .ph');if(ph&&!ph.textContent.trim()) ph.textContent='이미지를 클릭하여 업로드';
+            normalize();
+            renumberFootnotes();
+            rebuildToc();
+            wiki.querySelectorAll(EDITABLE).forEach(e=>e.contentEditable=isEdit);
+            applyCollapse();
+            lastRange=null;hideDel();refreshCtx();
+            mo.takeRecords();record(true);   // 불러온 문서의 수정 날짜는 그대로 유지
+        }
+        async function openLoad(){await renderBm();openModal('importM');}
+        async function renderBm(){
+            const box=$('bmList');box.textContent='';
+            let list=[];try{list=await bmAll();}catch(e){}
+            if(!list.length){
+                const d=document.createElement('div');d.className='bm-empty';
+                d.textContent='저장된 책갈피가 없습니다. 문서를 작성하고 [저장]을 누르면 이름별로 책갈피가 만들어져요.';
+                return box.append(d);
+            }
+            list.forEach(r=>{
+                const row=document.createElement('div');row.className='bm-row';
+                const o=document.createElement('button');o.type='button';o.className='bm-open';
+                const b=document.createElement('b');b.textContent=r.name;
+                const s=document.createElement('small');s.textContent='저장: '+bmTime(r.at);
+                o.append(b,s);o.onclick=()=>loadBm(r.name);
+                const x=document.createElement('button');x.type='button';x.className='bm-del';x.title='이 책갈피 삭제';
+                x.innerHTML='<i class="bi bi-trash"></i>';x.onclick=()=>delBm(r.name);
+                row.append(o,x);box.append(row);
+            });
+        }
+        async function loadBm(name){
+            const r=(await bmAll()).find(x=>x.name===name);
+            if(!r) return renderBm();
+            flushHistory();
+            if(bmBase!==snap()&&!confirm(`저장하지 않은 변경이 있을 수 있습니다.\n지금 내용을 '${name}' 책갈피로 바꿀까요?\n(바꾼 뒤에도 뒤로가기로 되돌릴 수 있습니다)`)) return;
+            applyDoc(r.html);
+            bmBase=snap();
+            closeModal();
+        }
+        async function delBm(name){
+            if(!confirm(`'${name}' 책갈피를 삭제할까요?\n(지금 편집 중인 내용에는 영향이 없습니다)`)) return;
+            await bmDelete(name);
+            renderBm();
+        }
+        // 지금 작성 중인 내용을 지우고 처음 서식으로 (저장해 둔 책갈피는 그대로)
+        function resetDoc(){
+            flushHistory();
+            if(!confirm('지금 작성 중인 내용을 모두 지우고 처음 서식으로 되돌릴까요?\n(저장해 둔 책갈피는 지워지지 않고, 뒤로가기로 되돌릴 수도 있습니다)')) return;
+            applyDoc(INIT_HTML);
+            bmBase=snap();
+        }
         async function save(){
             flushHistory();
-            if(await saveDraft()) return alert('저장됨!');
-            if(confirm('이 브라우저에서는 저장 공간을 쓸 수 없습니다.\n지금 내용이 들어 있는 편집기 파일로 내려받을까요? (다음에 그 파일을 열면 이어서 편집)')) downloadEditor();
+            const draftOk=await saveDraft();   // 자동 복구용 임시 저장 (이전과 동일)
+            const name=bmName();
+            const had=(await bmAll()).some(r=>r.name===name);
+            if(await bmPut({name,html:wiki.innerHTML,at:Date.now()})){
+                bmBase=snap();
+                return alert(`'${name}' 책갈피에 저장했어요.\n`+(had?'(같은 이름의 이전 저장본을 덮어썼습니다)':'(새 책갈피가 만들어졌습니다)'));
+            }
+            if(draftOk) return alert('책갈피로는 저장하지 못했지만, 지금 내용은 이 브라우저에 임시 저장했습니다.');
+            if(confirm('이 브라우저에서는 저장 공간을 쓸 수 없습니다.\n(시크릿·사생활 보호 모드이거나, 쿠키·사이트 데이터 저장이 차단되어 있을 수 있어요)\n지금 내용이 들어 있는 편집기 파일로 내려받을까요? (다음에 그 파일을 열면 이어서 편집)')) downloadEditor();
         }
         // 지금 내용이 들어 있는 편집기 HTML 파일 자체를 내려받기
         function downloadEditor(){
@@ -7042,6 +7174,66 @@ $$(".card-header[data-toggle]").forEach(h => {
 buildAvatarRows([]);
 refreshSelection();
 
+})();
+</script>
+
+<!-- Wiki Editor 저장 공간 연결
+     위키 에디터(iframe) 안에서 브라우저 저장소가 막혀 있으면(사파리·인앱 브라우저 등)
+     이 페이지가 대신 저장해 줍니다. 위키 에디터 iframe 이 보낸 요청만 처리합니다. -->
+<script>
+(function () {
+    var frame = document.getElementById("wikiFrame"), dbp = null;
+
+    function openDb() {
+        return dbp || (dbp = new Promise(function (res, rej) {
+            var r = indexedDB.open("wiki-editor", 1);
+            r.onupgradeneeded = function () { r.result.createObjectStore("kv"); };
+            r.onsuccess = function () { res(r.result); };
+            r.onerror = function () { rej(r.error); };
+        }));
+    }
+    function req(mode, fn) {
+        return openDb().then(function (db) {
+            return new Promise(function (res, rej) {
+                var tx = db.transaction("kv", mode), q = fn(tx.objectStore("kv"));
+                tx.oncomplete = function () { res(q.result); };
+                tx.onerror = tx.onabort = function () { rej(tx.error); };
+            });
+        });
+    }
+    function okKey(k) { return typeof k === "string" && k.indexOf("wiki-") === 0; }   // 위키 에디터 키만 허용
+
+    var ops = {
+        get:  function (a) { return req("readonly",  function (s) { return s.get(a[0]); }); },
+        set:  function (a) { return req("readwrite", function (s) { return s.put(a[1], a[0]); }); },
+        del:  function (a) { return req("readwrite", function (s) { return s.delete(a[0]); }); },
+        list: function (a) { return req("readonly",  function (s) { return s.getAll(IDBKeyRange.bound(a[0], a[0] + "\uffff")); }); },
+        lsGet:    function (a) { return okKey(a[0]) ? localStorage.getItem(a[0]) : null; },
+        lsSet:    function (a) { if (!okKey(a[0])) throw new Error("denied"); localStorage.setItem(a[0], a[1]); },
+        lsRemove: function (a) { if (!okKey(a[0])) throw new Error("denied"); localStorage.removeItem(a[0]); },
+        lsList:   function (a) {
+            var out = [];
+            if (!okKey(a[0])) return out;
+            for (var i = 0; i < localStorage.length; i++) {
+                var k = localStorage.key(i);
+                if (k && k.indexOf(a[0]) === 0) out.push(localStorage.getItem(k));
+            }
+            return out;
+        }
+    };
+
+    window.addEventListener("message", function (e) {
+        var m = e.data;
+        if (!frame || e.source !== frame.contentWindow || !m || m.wikiStore !== 1) return;
+        if (!Object.prototype.hasOwnProperty.call(ops, m.op)) return;
+        function reply(r) { r.wikiStoreReply = 1; r.id = m.id; e.source.postMessage(r, "*"); }
+        try {
+            Promise.resolve(ops[m.op](m.args || [])).then(
+                function (v) { reply({ ok: true, value: v }); },
+                function (err) { reply({ ok: false, error: String(err) }); }
+            );
+        } catch (err) { reply({ ok: false, error: String(err) }); }
+    });
 })();
 </script>
 
